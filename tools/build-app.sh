@@ -7,11 +7,12 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-swift build -c release --arch arm64
-bin="$(swift build -c release --arch arm64 --show-bin-path)/removemacai"
+sdk="${SDKROOT:-$(xcrun --show-sdk-path)}"
+swift build -c release --arch arm64 --sdk "$sdk"
+bin="$(swift build -c release --arch arm64 --sdk "$sdk" --show-bin-path)/removemacai"
 version="$("$bin" --version)"
 
-app=".build/RemoveMacAI.app"
+app=".build/RemoveMacAI 中文版.app"
 rm -rf "$app" .build/AppIcon.iconset
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp "$bin" "$app/Contents/MacOS/RemoveMacAI"
@@ -29,13 +30,14 @@ cat > "$app/Contents/Info.plist" <<PLIST
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleDevelopmentRegion</key><string>zh-Hans</string>
+  <key>CFBundleLocalizations</key><array><string>zh-Hans</string></array>
   <key>CFBundleExecutable</key><string>RemoveMacAI</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
-  <key>CFBundleIdentifier</key><string>io.github.omlahore.removemacai.app</string>
+  <key>CFBundleIdentifier</key><string>io.github.omlahore.removemacai.zh-Hans.app</string>
   <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
-  <key>CFBundleName</key><string>RemoveMacAI</string>
-  <key>CFBundleDisplayName</key><string>RemoveMacAI</string>
+  <key>CFBundleName</key><string>RemoveMacAI 中文版</string>
+  <key>CFBundleDisplayName</key><string>RemoveMacAI 中文版</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>$version</string>
   <key>CFBundleVersion</key><string>$version</string>

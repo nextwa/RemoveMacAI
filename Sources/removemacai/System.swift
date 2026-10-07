@@ -71,14 +71,14 @@ enum Models {
     var matched: [String] = []
     var skipped: [(String, String)] = []
     for name in sets {
-      guard let known = Catalog.modelSet(name) else { throw Failure("unknown model set \(name)") }
+      guard let known = Catalog.modelSet(name) else { throw Failure("未知模型集：\(name)") }
       let type = assetType(name)
       if type == known.assetType {
         matched.append(name)
       } else if let type {
-        skipped.append((name, "its asset type is \(type) on this version of macOS, so it was left alone"))
+        skipped.append((name, "该模型在此 macOS 版本中的资源类型为 \(type)，已保留"))
       } else {
-        skipped.append((name, "not found on this version of macOS, so it was left alone"))
+        skipped.append((name, "在此 macOS 版本中未找到，已保留"))
       }
     }
     return (matched, skipped)
@@ -90,7 +90,7 @@ enum Models {
   /// Returns the sets that stayed, with the reason.
   @discardableResult
   static func remove(_ sets: [String], timeout: TimeInterval = 120) throws -> [(String, String)] {
-    guard !sets.isEmpty else { throw Failure("no model sets selected") }
+    guard !sets.isEmpty else { throw Failure("未选择模型集") }
     var (matched, failed) = try matching(sets)
     for name in matched where present(name) {
       let done = DispatchSemaphore(value: 0)
@@ -100,7 +100,7 @@ enum Models {
         done.signal()
       }
       if done.wait(timeout: .now() + timeout) != .success {
-        failed.append((name, "no answer in \(Int(timeout)) seconds"))
+        failed.append((name, "\(Int(timeout)) 秒内未收到响应"))
       } else if let failure {
         let detail = failure.userInfo.map { "\($0.key): \($0.value)" }.joined(separator: "; ")
         failed.append((name, "\(failure.domain) \(failure.code) \(detail)"))

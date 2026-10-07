@@ -25,7 +25,7 @@ struct BackgroundItem: Identifiable, Hashable {
 
   /// What switching it off can break, or nil for an updater.
   var warning: String? {
-    isUpdater ? nil : "Not an updater. Turning it off can stop \(owner) working."
+    isUpdater ? nil : "此项不是更新程序。关闭后可能导致 \(owner) 无法正常工作。"
   }
 
   /// The app or program it runs, as people know it.
@@ -117,13 +117,13 @@ enum BackgroundItems {
       if !disabled { journal.entries[item.id] = nil }
     }
     if !adminCommands.isEmpty {
-      let result = Shell.admin(adminCommands, prompt: "RemoveMacAI needs your password to change background items for all users.")
+      let result = Shell.admin(adminCommands, prompt: "RemoveMacAI 需要你的密码，以更改对所有用户生效的后台项目。")
       if !result.ok { problems.append(Shell.adminError(result)) }
     }
     Engine.save(journal)
     let after = disabledLabels()
     for item in items where isDisabled(item, after) != disabled {
-      problems.append("\(item.label) is still \(disabled ? "on" : "off")")
+      problems.append("\(item.label)仍处于\(disabled ? "开启" : "关闭")状态")
     }
     return problems
   }

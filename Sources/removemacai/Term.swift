@@ -33,7 +33,7 @@ enum Term {
   }
 
   static func fail(_ message: String) -> Never {
-    FileHandle.standardError.write(Data((red("error: ") + message + "\n").utf8))
+    FileHandle.standardError.write(Data((red("错误：") + message + "\n").utf8))
     exit(1)
   }
 }

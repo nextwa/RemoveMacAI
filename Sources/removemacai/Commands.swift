@@ -20,34 +20,34 @@ enum Commands {
 
   static func status() {
     header()
-    print(Term.bold("Features"))
+    print(Term.bold("功能"))
     for feature in Catalog.features {
       let label: String
       switch Settings.state(feature) {
-      case .lockedOff: label = Term.green("off") + Term.dim(" (locked)")
-      case .off: label = Term.green("off")
-      case .on: label = Term.yellow("on")
-      case .unknown: label = Term.yellow("unknown")
+      case .lockedOff: label = Term.green("已关闭") + Term.dim("（已锁定）")
+      case .off: label = Term.green("已关闭")
+      case .on: label = Term.yellow("已开启")
+      case .unknown: label = Term.yellow("未知")
       }
       print("  " + Term.pad(feature.title, 40) + label)
     }
     print()
     if printModels() == 0 && Profile.installed().ai {
-      print(Term.dim("  macOS removes deleted model files itself, so System Settings can count them for a while."))
+      print(Term.dim("  macOS 会自行完成模型文件清理，“系统设置”可能暂时仍显示其占用。"))
     }
     print()
     if isOff() {
-      print(Term.green("Apple Intelligence is off.") + Term.dim(" Undo with: \(undo)"))
+      print(Term.green("Apple 智能已关闭。") + Term.dim(" 撤销命令：\(undo)"))
     } else {
-      print("Turn it off with: " + Term.bold("removemacai"))
+      print("关闭命令：" + Term.bold("removemacai"))
     }
   }
 
   @discardableResult
   static func printModels() -> Int64? {
-    print(Term.bold("Models on disk"))
+    print(Term.bold("磁盘上的模型"))
     guard Models.available() else {
-      print(Term.dim("  Apple's asset service did not answer, so the sizes are unknown."))
+      print(Term.dim("  Apple 资源服务未响应，模型大小未知。"))
       return nil
     }
     var readings: [String: Int64] = [:]
@@ -57,13 +57,13 @@ enum Commands {
       print("  " + Term.pad(set.title, 40) + modelSize(bytes))
     }
     let total = Models.total(Catalog.modelSets.map(\.name), read: { readings[$0] })
-    print("  " + Term.pad("Total", 40) + (total.map { Term.bold(Term.size($0)) } ?? Term.yellow("unknown")))
+    print("  " + Term.pad("合计", 40) + (total.map { Term.bold(Term.size($0)) } ?? Term.yellow("未知")))
     return total
   }
 
   static func modelSize(_ bytes: Int64?) -> String {
-    guard let bytes else { return Term.yellow("unknown") }
-    return bytes > 0 ? Term.yellow(Term.size(bytes)) : Term.dim("none")
+    guard let bytes else { return Term.yellow("未知") }
+    return bytes > 0 ? Term.yellow(Term.size(bytes)) : Term.dim("无")
   }
 
   static func featuresOn() -> Int { Catalog.features.filter { Settings.state($0) == .on }.count }
@@ -78,7 +78,7 @@ enum Commands {
   static func off(keep: Set<String>, dryRun: Bool, yes: Bool) -> Bool {
     header()
     for id in keep where Catalog.feature(id) == nil {
-      Term.fail("there is no feature called \"\(id)\". The names are listed by: removemacai features")
+      Term.fail("没有名为“\(id)”的功能。可用标识请运行：removemacai features")
     }
     let sets = Catalog.setsToRemove(keeping: keep)
     let modelsAvailable = sets.isEmpty || Models.available()
@@ -86,63 +86,63 @@ enum Commands {
     let profile = Profile.installed()
     let target = Profile.Contents(ai: keep, tweaks: profile.tweaks)
     let profileReady = profile.contents == target
-    let offSummary = keep.isEmpty ? "Apple Intelligence is off." : "The selected features are off."
+    let offSummary = keep.isEmpty ? "Apple 智能已关闭。" : "所选功能已关闭。"
 
     if profileReady && modelsBefore == 0 {
-      print(Term.green(offSummary) + " No models remain in the sets selected for removal.")
+      print(Term.green(offSummary) + "所选模型集中已没有剩余模型。")
       if !sets.isEmpty {
-        print(Term.dim("macOS removes deleted model files itself, so System Settings can count them for a while."))
+        print(Term.dim("macOS 会自行完成模型文件清理，“系统设置”可能暂时仍显示其占用。"))
       }
       warnKeptButOff(keep)
-      print(Term.dim("Check it with: removemacai status    Undo with: \(undo)"))
+      print(Term.dim("检查状态：removemacai status    撤销：\(undo)"))
       return true
     }
 
     let on = featuresOn()
-    print(profileReady ? "The profile is installed. Checking the selected models." : "Checking Apple Intelligence and its models.")
-    print("  " + Term.pad("Features on", 20) + "\(on) of \(Catalog.features.count)")
-    print("  " + Term.pad("Models on disk", 20) + (modelsBefore.map(Term.size) ?? "unknown"))
+    print(profileReady ? "描述文件已安装，正在检查所选模型。" : "正在检查 Apple 智能及其模型。")
+    print("  " + Term.pad("已开启功能", 20) + "\(on) 项，共 \(Catalog.features.count) 项")
+    print("  " + Term.pad("磁盘上的模型", 20) + (modelsBefore.map(Term.size) ?? "未知"))
     print()
-    print("Turning it off will:")
-    print("  · switch off Siri, Writing Tools, Genmoji, Image Playground, summaries and ChatGPT"
-      + (keep.isEmpty ? "" : Term.dim(" (keeping " + keep.sorted().joined(separator: ", ") + ")")))
+    print("关闭后将执行：")
+    print("  · 关闭 Siri、写作工具、智绘表情、图乐园、摘要及 ChatGPT 集成"
+      + (keep.isEmpty ? "" : Term.dim("（保留：" + keep.sorted().joined(separator: ", ") + ")")))
     if let modelsBefore {
-      print("  · delete " + Term.bold(Term.size(modelsBefore)) + " of models and stop macOS downloading them again")
+      print("  · 删除" + Term.bold(Term.size(modelsBefore)) + "的模型，并阻止 macOS 再次下载")
     } else if modelsAvailable {
-      print("  · request model removal and block downloads (the current model sizes are unknown)")
+      print("  · 请求移除模型并阻止下载（当前模型大小未知）")
     } else {
-      print("  · stop model downloads (Apple's asset service is unavailable, so removal cannot be requested)")
+      print("  · 阻止模型下载（Apple 资源服务不可用，无法请求移除模型）")
     }
     if !profileReady {
-      print("  · ask you to approve one profile in System Settings (macOS requires that click)")
+      print("  · 请你在“系统设置”中批准安装描述文件（macOS 要求手动确认）")
     }
     print()
-    print(Term.dim("Everything comes back with: \(undo)"))
+    print(Term.dim("恢复设置：\(undo)"))
     print()
 
     let data: Data
-    do { data = try Profile.data(target) } catch { Term.fail("could not build the profile: \(error)") }
+    do { data = try Profile.data(target) } catch { Term.fail("无法生成描述文件：\(error)") }
 
     if dryRun {
       let path = FileManager.default.temporaryDirectory.appendingPathComponent("RemoveMacAI.mobileconfig")
       try? data.write(to: path)
-      print(Term.bold("Dry run, nothing changed."))
-      print("Profile it would install:  " + path.path)
+      print(Term.bold("仅预览，未更改任何设置。"))
+      print("将安装的描述文件：" + path.path)
       var deleting = sets
       var staying: [(String, String)] = []
       if modelsAvailable, let split = try? Models.matching(sets) {
         (deleting, staying) = (split.matched.filter { Models.present($0) }, split.skipped)
       }
-      print("Models it would delete:    " + (deleting.isEmpty ? "none" : deleting.joined(separator: ", ")))
+      print("将删除的模型：" + (deleting.isEmpty ? "无" : deleting.joined(separator: ", ")))
       for (name, reason) in staying {
-        print("  " + Term.yellow("!") + " \(Catalog.modelSet(name)?.title ?? name) would stay: " + Term.dim(reason))
+        print("  " + Term.yellow("!") + "将保留\(Catalog.modelSet(name)?.title ?? name)：" + Term.dim(reason))
       }
       return true
     }
     if !yes {
-      guard isatty(STDIN_FILENO) == 1 else { Term.fail("run it in a terminal, or add --yes") }
-      guard Term.ask("Turn Apple Intelligence off?") else {
-        print("Nothing changed.")
+      guard isatty(STDIN_FILENO) == 1 else { Term.fail("请在终端中运行，或添加 --yes 跳过确认") }
+      guard Term.ask("关闭 Apple 智能？") else {
+        print("未更改任何设置。")
         return true
       }
       print()
@@ -150,33 +150,33 @@ enum Commands {
 
     // 1. The profile switches the features off and blocks the model downloads.
     if profileReady {
-      print(Term.green("✓") + " The profile is already installed")
+      print(Term.green("✓") + " 描述文件已安装")
     } else {
-      print(Term.bold("Step 1 of 2") + "  Approve the profile")
-      do { try data.write(to: Profile.file) } catch { Term.fail("could not write \(Profile.file.path): \(error)") }
+      print(Term.bold("第 1 步，共 2 步") + "  批准描述文件")
+      do { try data.write(to: Profile.file) } catch { Term.fail("无法写入 \(Profile.file.path)：\(error)") }
       NSWorkspace.shared.open(Profile.file)
       Thread.sleep(forTimeInterval: 1)
       openProfileSettings()
-      print("  System Settings is open. Double-click " + Term.bold("RemoveMacAI") + ", then click "
-        + Term.bold("Install") + ".")
-      guard waitFor("waiting for you in System Settings", { Profile.matches(target) })
+      print("  “系统设置”已打开。请双击" + Term.bold("RemoveMacAI") + "，然后点击"
+        + Term.bold("安装") + ".")
+      guard waitFor("等待你在“系统设置”中确认", { Profile.matches(target) })
       else {
-        print("  The profile is not installed yet. Run this again once it is, and it picks up from here.")
+        print("  描述文件尚未安装，安装后再次运行即可继续。")
         return false
       }
-      print("  " + Term.green("✓") + " Profile installed")
+      print("  " + Term.green("✓") + " 描述文件已安装")
     }
 
     // 2. The models go now that they cannot download again.
-    let removalComplete = deleteModels(sets, step: "Step 2 of 2")
+    let removalComplete = deleteModels(sets, step: "第 2 步，共 2 步")
     print()
     if removalComplete {
-      print(Term.green("Done.") + " " + offSummary)
+      print(Term.green("完成。") + " " + offSummary)
     } else {
-      print(Term.yellow("Incomplete.") + " " + offSummary + " The profile remains installed; model removal is incomplete.")
+      print(Term.yellow("尚未全部完成。") + " " + offSummary + " 描述文件仍已安装，模型移除尚未完成。")
     }
     warnKeptButOff(keep)
-    print(Term.dim("Check it with: removemacai status    Undo with: \(undo)"))
+    print(Term.dim("检查状态：removemacai status    撤销：\(undo)"))
     return removalComplete
   }
 
@@ -191,36 +191,36 @@ enum Commands {
       do { (removing, staying) = try Models.matching(sets) } catch { Term.fail("\(error)") }
     }
     for (name, reason) in staying {
-      print("  " + Term.yellow("!") + " \(Catalog.modelSet(name)?.title ?? name) stayed: " + Term.dim(reason))
+      print("  " + Term.yellow("!") + "已保留\(Catalog.modelSet(name)?.title ?? name)：" + Term.dim(reason))
     }
     let removalBefore: Int64? = removing.isEmpty ? 0 : (removalAvailable ? Models.total(removing) : nil)
     var removalComplete = true
     if !removalAvailable {
-      print("  " + Term.yellow("!") + " Apple's asset service is unavailable, so model removal could not be requested.")
+      print("  " + Term.yellow("!") + " Apple 资源服务不可用，无法请求移除模型。")
       removalComplete = false
     } else if removalBefore != 0 {
-      print(Term.bold(step) + "  Delete the models")
+      print(Term.bold(step) + "  删除模型")
       do {
         let result = try removeModels(removing, before: removalBefore)
         for (name, reason) in result.failures {
-          print("  " + Term.yellow("!") + " Removal request for \(Catalog.modelSet(name)?.title ?? name): " + Term.dim(reason))
+          print("  " + Term.yellow("!") + " \(Catalog.modelSet(name)?.title ?? name)移除请求：" + Term.dim(reason))
         }
         removalComplete = result.complete
         if let deleted = result.deletedBytes {
-          print("  " + (result.complete ? Term.green("✓") : Term.yellow("!")) + " Deleted " + Term.size(deleted))
+          print("  " + (result.complete ? Term.green("✓") : Term.yellow("!")) + " 已删除" + Term.size(deleted))
         } else {
-          print("  " + Term.dim("The amount deleted is unknown because the asset service did not report all sizes."))
+          print("  " + Term.dim("资源服务未返回全部模型大小，无法确定已删除的容量。"))
         }
         if result.after == nil {
-          print("  " + Term.yellow("!") + " The remaining model sizes are unknown; removal could not be confirmed.")
+          print("  " + Term.yellow("!") + " 剩余模型大小未知，无法确认移除结果。")
         } else if let remaining = result.after, remaining > 0 {
-          print("  " + Term.yellow("!") + " " + Term.size(remaining) + " of selected models remain.")
+          print("  " + Term.yellow("!") + " " + Term.size(remaining) + "的所选模型仍然保留。")
         }
         if !result.verified {
-          print("  " + Term.yellow("!") + " Timed out waiting to confirm that the selected models were removed.")
+          print("  " + Term.yellow("!") + " 等待确认所选模型移除结果超时。")
         }
         if result.complete {
-          print("    " + Term.dim("macOS removes the files itself, so System Settings can count them under Apple Intelligence for a while."))
+          print("    " + Term.dim("macOS 会自行完成文件清理，“系统设置”可能暂时仍将其计入 Apple 智能占用。"))
         }
       } catch { Term.fail("\(error)") }
     }
@@ -229,7 +229,7 @@ enum Commands {
 
   static func warnKeptButOff(_ keep: Set<String>) {
     for feature in Catalog.features where keep.contains(feature.id) && Settings.state(feature) == .off {
-      print(Term.yellow("!") + " \(feature.title) is kept, but it is switched off. Turn it on in System Settings.")
+      print(Term.yellow("!") + " 已保留\(feature.title)，但该功能目前仍关闭。请在“系统设置”中开启。")
     }
   }
 
@@ -238,7 +238,7 @@ enum Commands {
     _ sets: [String], before: Int64?,
     remove: ([String]) throws -> [(String, String)] = { try Models.remove($0) },
     total: @escaping ([String]) -> Int64? = { Models.total($0) },
-    wait: (() -> Bool) -> Bool = { waitFor("deleting", $0, minutes: 0.5) }
+    wait: (() -> Bool) -> Bool = { waitFor("正在删除", $0, minutes: 0.5) }
   ) throws -> ModelRemovalResult {
     if sets.isEmpty || before == 0 {
       return ModelRemovalResult(before: before, after: 0, failures: [], verified: true)
@@ -261,17 +261,17 @@ enum Commands {
     let journal = Engine.loadJournal()
     let profileOn = Profile.installed().on
     guard profileOn || !journal.entries.isEmpty else {
-      print("RemoveMacAI hasn't changed anything on this Mac, so there is nothing to undo.")
+      print("RemoveMacAI 尚未更改此 Mac 的设置，无需撤销。")
       return
     }
     if !journal.entries.isEmpty {
       let problems = Engine.revertAll()
       for p in problems { print("  " + Term.yellow("!") + " " + p) }
-      print(Term.green("✓") + " Settings changed outside the profile are back as they were")
+      print(Term.green("✓") + " 描述文件之外的设置已恢复")
     }
     if profileOn {
       guard removeProfile() else { exit(1) }
-      print(Term.dim("macOS downloads the models again when you turn a feature back on."))
+      print(Term.dim("重新启用相关功能时，macOS 会再次下载模型。"))
     }
   }
 
@@ -280,7 +280,7 @@ enum Commands {
     header()
     let profile = Profile.installed()
     guard profile.on && profile.ai else {
-      print("RemoveMacAI isn't turning Apple Intelligence off, so there is nothing to undo.")
+      print("Apple 智能并未被 RemoveMacAI 关闭，无需撤销。")
       return
     }
     if profile.tweaks.isEmpty {
@@ -289,35 +289,35 @@ enum Commands {
       let target = Profile.Contents(ai: nil, tweaks: profile.tweaks)
       guard installProfile(target) else { exit(1) }
     }
-    print(Term.dim("macOS downloads the models again when you turn a feature back on."))
+    print(Term.dim("重新启用相关功能时，macOS 会再次下载模型。"))
   }
 
   static func removeProfile() -> Bool {
     openProfileSettings()
-    print("System Settings is open. Select " + Term.bold("RemoveMacAI") + ", then click " + Term.bold("Remove") + ".")
-    print(Term.dim("From a terminal instead: sudo profiles remove -identifier \(Profile.identifier)"))
-    guard waitFor("waiting for you in System Settings", { !Profile.installed().on }) else {
-      print("The profile is still installed. You can remove it in System Settings any time.")
+    print("“系统设置”已打开。请选择" + Term.bold("RemoveMacAI") + "，然后点击" + Term.bold("移除") + ".")
+    print(Term.dim("也可在终端中运行：sudo profiles remove -identifier \(Profile.identifier)"))
+    guard waitFor("等待你在“系统设置”中确认", { !Profile.installed().on }) else {
+      print("描述文件仍已安装，可随时在“系统设置”中移除。")
       return false
     }
-    print(Term.green("✓") + " Profile removed. Your own settings apply again.")
+    print(Term.green("✓") + " 描述文件已移除，已恢复使用你自己的设置。")
     return true
   }
 
   /// Shows the profile for approval and waits until it is in force.
   static func installProfile(_ target: Profile.Contents) -> Bool {
     do { try Profile.present(target) } catch {
-      print(Term.red("error: ") + "could not write \(Profile.file.path): \(error)")
+      print(Term.red("错误：") + "无法写入 \(Profile.file.path)：\(error)")
       return false
     }
     Thread.sleep(forTimeInterval: 1)
     openProfileSettings()
-    print("System Settings is open. Double-click " + Term.bold("RemoveMacAI") + ", then click " + Term.bold("Install") + ".")
-    guard waitFor("waiting for you in System Settings", { Profile.matches(target) }) else {
-      print("The profile is not installed yet. Run this again once it is.")
+    print("“系统设置”已打开。请双击" + Term.bold("RemoveMacAI") + "，然后点击" + Term.bold("安装") + ".")
+    guard waitFor("等待你在“系统设置”中确认", { Profile.matches(target) }) else {
+      print("描述文件尚未安装，请在安装后再次运行。")
       return false
     }
-    print(Term.green("✓") + " Profile installed")
+    print(Term.green("✓") + " 描述文件已安装")
     return true
   }
 

@@ -42,7 +42,7 @@ NSString *UAFAssetType(NSString *assetSet) {
 int64_t UAFDownloadedBytes(NSString *assetSet, NSError **error) {
   Class manager = NSClassFromString(@"UAFAutoAssetManager");
   if (![manager respondsToSelector:@selector(latestStatusForClients:error:)]) {
-    if (error) *error = UAFError(@"asset status interface unavailable");
+    if (error) *error = UAFError(@"资源状态接口不可用");
     return -1;
   }
   id status = [manager latestStatusForClients:assetSet error:error];
@@ -53,7 +53,7 @@ int64_t UAFDownloadedBytes(NSString *assetSet, NSError **error) {
 NSDictionary *UAFInformation(NSError **error) {
   Class manager = NSClassFromString(@"UAFAssetSetManager");
   if (![manager respondsToSelector:@selector(generateInformationWithError:)]) {
-    if (error) *error = UAFError(@"asset inventory interface unavailable");
+    if (error) *error = UAFError(@"资源清单接口不可用");
     return nil;
   }
   id info = [manager generateInformationWithError:error];
@@ -63,18 +63,18 @@ NSDictionary *UAFInformation(NSError **error) {
                                              error:error];
   }
   if ([info isKindOfClass:NSDictionary.class]) return info;
-  if (error && !*error) *error = UAFError(@"asset inventory has an unexpected shape");
+  if (error && !*error) *error = UAFError(@"资源清单格式不符合预期");
   return nil;
 }
 
 void UAFResetAssetSets(NSArray<NSString *> *assetSets, void (^completion)(NSError *)) {
   if (assetSets.count == 0) {
-    completion(UAFError(@"refusing to reset an empty list of asset sets"));
+    completion(UAFError(@"无法重置空的资源集列表"));
     return;
   }
   Class interfaceClass = NSClassFromString(@"UAFXPCProxyServiceInterface");
   if (![interfaceClass respondsToSelector:@selector(defaultInterface)]) {
-    completion(UAFError(@"asset service interface unavailable"));
+    completion(UAFError(@"资源服务接口不可用"));
     return;
   }
   NSXPCConnection *connection = [[NSXPCConnection alloc] initWithMachServiceName:kService
@@ -95,7 +95,7 @@ void UAFResetAssetSets(NSArray<NSString *> *assetSets, void (^completion)(NSErro
   Protocol *protocol = connection.remoteObjectInterface.protocol;
   if (protocol_getMethodDescription(protocol, operation, YES, YES).name == NULL &&
       protocol_getMethodDescription(protocol, operation, NO, YES).name == NULL) {
-    finish(UAFError(@"asset service does not accept operations"));
+    finish(UAFError(@"资源服务不接受此操作"));
     return;
   }
   id proxy = [connection remoteObjectProxyWithErrorHandler:^(NSError *e) { finish(e); }];

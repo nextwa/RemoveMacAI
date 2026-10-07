@@ -6,7 +6,7 @@ struct RemoveMacAIApp: App {
   @State private var model = AppModel()
 
   var body: some Scene {
-    Window("RemoveMacAI", id: "main") {
+    Window("RemoveMacAI 中文版", id: "main") {
       ContentView()
         .environment(model)
         .frame(minWidth: 860, minHeight: 600)
@@ -15,14 +15,14 @@ struct RemoveMacAIApp: App {
     .commands {
       CommandGroup(replacing: .newItem) {}
       CommandGroup(replacing: .appInfo) {
-        Button("About RemoveMacAI") { AppDelegate.showAbout() }
+        Button("关于 RemoveMacAI") { AppDelegate.showAbout() }
       }
       CommandGroup(after: .toolbar) {
-        Button("Reload") { model.reload(resetChoices: true) }.keyboardShortcut("r")
+        Button("重新载入") { model.reload(resetChoices: true) }.keyboardShortcut("r")
       }
       CommandGroup(replacing: .help) {
-        Link("RemoveMacAI on GitHub", destination: URL(string: "https://github.com/omlahore/RemoveMacAI")!)
-        Link("Report a Problem", destination: URL(string: "https://github.com/omlahore/RemoveMacAI/issues/new/choose")!)
+        Link("RemoveMacAI 的 GitHub 项目", destination: URL(string: "https://github.com/nextwa/RemoveMacAI")!)
+        Link("报告问题", destination: URL(string: "https://github.com/nextwa/RemoveMacAI/issues/new/choose")!)
       }
     }
   }
@@ -42,10 +42,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
   static func showAbout() {
     let credits = NSMutableAttributedString(
-      string: "Debloats macOS and can undo every change.\n\nThe Apple Intelligence part builds on pared by 4evy, which first mapped Apple's asset service and model sets.",
+      string: "精简 macOS，并支持撤销设置更改。\n\nApple 智能移除功能基于 4evy 的 pared 项目，该项目率先梳理了 Apple 的资源服务与模型集。",
       attributes: [.font: NSFont.systemFont(ofSize: 11), .foregroundColor: NSColor.secondaryLabelColor])
     NSApp.orderFrontStandardAboutPanel(options: [
-      .applicationName: "RemoveMacAI",
+      .applicationName: "RemoveMacAI 中文版",
       .applicationVersion: version,
       .version: "",
       .credits: credits,

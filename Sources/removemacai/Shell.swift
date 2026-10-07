@@ -50,7 +50,7 @@ enum Shell {
   /// "0:390: execution error:" and appends the error number.
   static func adminError(_ result: Result) -> String {
     var text = result.output.trimmed
-    if text.hasSuffix("(-128)") { return "Cancelled, so nothing that needs your password changed." }
+    if text.hasSuffix("(-128)") { return "已取消，需要密码授权的项目均未更改。" }
     if let range = text.range(of: "execution error: ") { text = String(text[range.upperBound...]) }
     if let paren = text.range(of: #" \(-?\d+\)$"#, options: .regularExpression) { text.removeSubrange(paren) }
     return text

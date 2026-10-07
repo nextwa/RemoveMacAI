@@ -7,12 +7,12 @@ enum Page: Hashable {
 
   var title: String {
     switch self {
-    case .overview: return "Overview"
-    case .intelligence: return "Apple Intelligence"
+    case .overview: return "概览"
+    case .intelligence: return "Apple 智能"
     case .group(let g): return g.title
-    case .background: return "Background Items"
-    case .storage: return "Storage"
-    case .changes: return "Undo"
+    case .background: return "后台项目"
+    case .storage: return "储存空间"
+    case .changes: return "撤销更改"
     }
   }
 
@@ -184,7 +184,7 @@ final class AppModel {
   func apply() {
     let plan = plan()
     reviewing = false
-    run = .working("Changing settings")
+    run = .working("正在修改设置")
     cancelWait = false
     Task.detached(priority: .userInitiated) {
       var problems = Engine.runLocal(plan)
@@ -192,7 +192,7 @@ final class AppModel {
       if let target = plan.profile {
         await MainActor.run { self.run = .approveProfile(remove: target.isEmpty) }
         if !target.isEmpty {
-          do { try Profile.present(target) } catch { problems.append("Could not write the profile: \(error)") }
+          do { try Profile.present(target) } catch { problems.append("无法写入描述文件：\(error)") }
           try? await Task.sleep(nanoseconds: 1_000_000_000)
         }
         await MainActor.run { Commands.openProfileSettings() }
@@ -200,13 +200,13 @@ final class AppModel {
         if !approved {
           problems.append(
             target.isEmpty
-              ? "The profile is still installed. Remove RemoveMacAI in System Settings > General > Device Management."
-              : "The profile wasn't approved, so the locked settings and Apple Intelligence didn't change.")
+              ? "描述文件仍已安装。请前往“系统设置 > 通用 > 设备管理”移除 RemoveMacAI。"
+              : "描述文件未获批准，带锁的设置及 Apple 智能状态尚未更改。")
         }
       }
       // Models only go once the profile blocks their download.
       if !plan.models.isEmpty && Profile.installed().ai {
-        await MainActor.run { self.run = .working("Deleting Apple Intelligence models") }
+        await MainActor.run { self.run = .working("正在删除 Apple 智能模型") }
         let result = Self.deleteModels(plan.models)
         problems += result.problems
         freed = result.freed
@@ -220,19 +220,19 @@ final class AppModel {
   }
 
   nonisolated static func deleteModels(_ sets: [String]) -> (problems: [String], freed: Int64?) {
-    guard Models.available() else { return (["Apple's asset service didn't answer, so the models stay for now."], nil) }
+    guard Models.available() else { return (["Apple 资源服务未响应，模型暂时保留。"], nil) }
     var problems: [String] = []
     var removing = sets
     do {
       let split = try Models.matching(sets)
       removing = split.matched
-      problems += split.skipped.map { "\(Catalog.modelSet($0.0)?.title ?? $0.0) stayed: \($0.1)" }
+      problems += split.skipped.map { "已保留\(Catalog.modelSet($0.0)?.title ?? $0.0)：\($0.1)" }
     } catch { return (["\(error)"], nil) }
     let before = Models.total(removing)
     do {
       let result = try Commands.removeModels(removing, before: before)
       problems += result.failures.map { "\(Catalog.modelSet($0.0)?.title ?? $0.0): \($0.1)" }
-      if !result.verified { problems.append("Removal couldn't be confirmed yet. Check again in a minute.") }
+      if !result.verified { problems.append("暂时无法确认删除结果，请稍后再检查。") }
       return (problems, result.deletedBytes)
     } catch {
       return (problems + ["\(error)"], nil)
@@ -255,7 +255,7 @@ final class AppModel {
   /// Deletes models left on disk while Apple Intelligence is already off.
   func deleteLeftoverModels() {
     guard let kept = currentAI else { return }
-    run = .working("Deleting Apple Intelligence models")
+    run = .working("正在删除 Apple 智能模型")
     Task.detached(priority: .userInitiated) {
       let sets = Catalog.setsToRemove(keeping: kept).filter { Models.present($0) }
       let result = Self.deleteModels(sets)
@@ -272,7 +272,7 @@ final class AppModel {
   // MARK: undo
 
   func undoEverything() {
-    run = .working("Undoing changes")
+    run = .working("正在撤销更改")
     cancelWait = false
     Task.detached(priority: .userInitiated) {
       var problems = Engine.revertAll()
@@ -282,7 +282,7 @@ final class AppModel {
           Commands.openProfileSettings()
         }
         if !(await self.waitFor { !Profile.installed().on }) {
-          problems.append("The profile is still installed. Remove RemoveMacAI in System Settings > General > Device Management.")
+          problems.append("描述文件仍已安装。请前往“系统设置 > 通用 > 设备管理”移除 RemoveMacAI。")
         }
       }
       let outcome = RunState.finished(problems: problems, freed: nil)
@@ -336,14 +336,14 @@ final class AppModel {
       let trashedTotal = chosen.filter { !$0.permanent }.reduce(Int64(0)) { $0 + $1.bytes }
       let left = items.filter { trashedIDs.contains($0.id) }.reduce(Int64(0)) { $0 + $1.bytes }
       var parts: [String] = []
-      if !trashedIDs.isEmpty { parts.append("Moved \(Term.size(max(0, trashedTotal - left))) to the Trash. Empty the Trash to free the space.") }
+      if !trashedIDs.isEmpty { parts.append("已将 \(Term.size(max(0, trashedTotal - left))) 移入废纸篓，清倒废纸篓后才会释放空间。") }
       let permanent = chosen.filter(\.permanent)
       if !permanent.isEmpty && result.problems.isEmpty {
-        parts.append("Deleted \(permanent.map(\.title).joined(separator: " and ")).")
+        parts.append("已删除：\(permanent.map(\.title).joined(separator: "、"))。")
       }
       var message = parts.joined(separator: " ")
       if result.protected > 0 {
-        message += " \(result.protected) item\(result.protected == 1 ? "" : "s") macOS protects stayed where \(result.protected == 1 ? "it was" : "they were")."
+        message += "有 \(result.protected) 个受 macOS 保护的项目保留在原处。"
       }
       if !result.problems.isEmpty { message += "\n" + result.problems.joined(separator: "\n") }
       let finalMessage = message

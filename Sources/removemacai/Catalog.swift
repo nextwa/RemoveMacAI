@@ -35,37 +35,37 @@ enum Catalog {
   static let modelSets: [ModelSet] = [
     ModelSet(
       name: foundationModels, assetType: "com.apple.MobileAsset.UAF.FM.GenerativeModels",
-      title: "Apple Intelligence foundation models"),
-    ModelSet(name: visualModels, assetType: visualModels, title: "Image and Genmoji models"),
-    ModelSet(name: spatialModels, assetType: spatialModels, title: "Spatial Photos models"),
-    ModelSet(name: cleanUpModels, assetType: cleanUpModels, title: "Photos Clean Up models"),
-    ModelSet(name: codeModels, assetType: codeModels, title: "Xcode code completion models"),
+      title: "Apple 智能基础模型"),
+    ModelSet(name: visualModels, assetType: visualModels, title: "图像与智绘表情模型"),
+    ModelSet(name: spatialModels, assetType: spatialModels, title: "空间照片模型"),
+    ModelSet(name: cleanUpModels, assetType: cleanUpModels, title: "照片清理模型"),
+    ModelSet(name: codeModels, assetType: codeModels, title: "Xcode 代码补全模型"),
   ]
 
   static let features: [Feature] = [
     Feature(
-      id: "siri", title: "Siri and Siri AI", restrictions: ["allowAssistant"],
+      id: "siri", title: "Siri 与智能 Siri", restrictions: ["allowAssistant"],
       preferences: [
         ForcedPreference(domain: "com.apple.assistant.support", key: "Assistant Enabled", off: false),
         ForcedPreference(domain: "com.apple.Siri", key: "StatusMenuVisible", off: false),
         ForcedPreference(domain: "com.apple.Siri", key: "VoiceTriggerUserEnabled", off: false),
       ], modelSets: [foundationModels]),
     Feature(
-      id: "chatgpt", title: "ChatGPT and other AI extensions",
+      id: "chatgpt", title: "ChatGPT 与其他 AI 扩展集成",
       restrictions: [
         "allowExternalIntelligenceIntegrations", "allowExternalIntelligenceIntegrationsSignIn",
       ], preferences: [], modelSets: []),
     Feature(
-      id: "writing-tools", title: "Writing Tools", restrictions: ["allowWritingTools"],
+      id: "writing-tools", title: "写作工具", restrictions: ["allowWritingTools"],
       preferences: [], modelSets: [foundationModels]),
     Feature(
-      id: "genmoji", title: "Genmoji", restrictions: ["allowGenmoji"], preferences: [],
+      id: "genmoji", title: "智绘表情（Genmoji）", restrictions: ["allowGenmoji"], preferences: [],
       modelSets: [foundationModels, visualModels]),
     Feature(
-      id: "image-playground", title: "Image Playground", restrictions: ["allowImagePlayground"],
+      id: "image-playground", title: "图乐园（Image Playground）", restrictions: ["allowImagePlayground"],
       preferences: [], modelSets: [foundationModels, visualModels]),
     Feature(
-      id: "mail", title: "Mail summaries and smart replies",
+      id: "mail", title: "邮件摘要与智能回复",
       restrictions: ["allowMailSummary", "allowMailSmartReplies"],
       preferences: [
         ForcedPreference(
@@ -73,38 +73,38 @@ enum Catalog {
         ForcedPreference(domain: "group.com.apple.mail", key: "PersonalizedSmartReplies", off: false),
       ], modelSets: [foundationModels]),
     Feature(
-      id: "notification-summaries", title: "Notification summaries", restrictions: [],
+      id: "notification-summaries", title: "通知摘要", restrictions: [],
       preferences: [
         ForcedPreference(domain: "group.com.apple.usernoted", key: "summarize_previews", off: false)
       ], modelSets: [foundationModels]),
     Feature(
-      id: "messages-summaries", title: "Messages summaries", restrictions: [],
+      id: "messages-summaries", title: "信息摘要", restrictions: [],
       preferences: [
         ForcedPreference(domain: "com.apple.MobileSMS", key: "messageSummarizationEnabled", off: false)
       ], modelSets: [foundationModels]),
     Feature(
-      id: "safari-summaries", title: "Safari summaries", restrictions: ["allowSafariSummary"],
+      id: "safari-summaries", title: "Safari 网页摘要", restrictions: ["allowSafariSummary"],
       preferences: [], modelSets: [foundationModels]),
     Feature(
-      id: "notes-summaries", title: "Notes transcription summaries",
+      id: "notes-summaries", title: "备忘录转写摘要",
       restrictions: ["allowNotesTranscriptionSummary"], preferences: [],
       modelSets: [foundationModels]),
     Feature(
-      id: "inline-predictions", title: "Inline text predictions", restrictions: [],
+      id: "inline-predictions", title: "行内文本预测", restrictions: [],
       preferences: [
         ForcedPreference(
           domain: ".GlobalPreferences", key: "NSAutomaticInlinePredictionEnabled", off: false)
       ], modelSets: []),
     Feature(
-      id: "spatial-photos", title: "Spatial Photos", restrictions: [],
+      id: "spatial-photos", title: "空间照片", restrictions: [],
       preferences: [
         ForcedPreference(domain: "com.apple.spatialphotosrelive", key: "LocallyDisabled", off: true)
       ], modelSets: [spatialModels]),
     Feature(
-      id: "photos-clean-up", title: "Photos Clean Up", restrictions: [], preferences: [],
+      id: "photos-clean-up", title: "照片清理", restrictions: [], preferences: [],
       modelSets: [cleanUpModels]),
     Feature(
-      id: "xcode-completion", title: "Xcode predictive code completion", restrictions: [],
+      id: "xcode-completion", title: "Xcode 预测式代码补全", restrictions: [],
       preferences: [], modelSets: [codeModels]),
   ]
 

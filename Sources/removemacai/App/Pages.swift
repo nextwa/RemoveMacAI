@@ -9,37 +9,37 @@ struct OverviewView: View {
     Form {
       Section {
         StatusRow(
-          symbol: "apple.intelligence", title: "Apple Intelligence",
+          symbol: "apple.intelligence", title: "Apple 智能",
           value: aiText, good: model.currentAI != nil
         ) { model.page = .intelligence }
         StatusRow(
-          symbol: "slider.horizontal.3", title: "Tweaks",
-          value: "\(model.appliedCount) of \(model.availableCount) applied", good: model.appliedCount > 0
+          symbol: "slider.horizontal.3", title: "系统调整",
+          value: "已应用 \(model.appliedCount) 项，共 \(model.availableCount) 项", good: model.appliedCount > 0
         ) { model.page = .group(.privacy) }
         StatusRow(
-          symbol: "gearshape.2", title: "Background items from other apps",
+          symbol: "gearshape.2", title: "其他应用的后台项目",
           value: backgroundText, good: model.background.isEmpty || !model.backgroundOff.isEmpty
         ) { model.page = .background }
         StatusRow(
-          symbol: "internaldrive", title: "Space you can get back",
-          value: model.scanned ? Term.size(model.storage.reduce(0) { $0 + $1.bytes }) : "Not scanned yet", good: false
+          symbol: "internaldrive", title: "可回收的储存空间",
+          value: model.scanned ? Term.size(model.storage.reduce(0) { $0 + $1.bytes }) : "尚未扫描", good: false
         ) { model.page = .storage }
       } header: {
         VStack(alignment: .leading, spacing: 18) {
           VStack(alignment: .leading, spacing: 6) {
-            Text("Debloat this Mac")
+            Text("为这台 Mac 做减法")
               .font(.system(size: 28, weight: .bold))
               .foregroundStyle(.primary)
-            Text("Turn off Apple Intelligence, analytics and the pop-ups macOS adds, and get disk space back. You see every change before it happens, and you can undo all of it.")
+            Text("关闭 Apple 智能、分析数据收集及部分系统弹窗，回收磁盘空间。系统调整可在应用前逐项检查，并可撤销。")
               .font(.body)
               .foregroundStyle(.secondary)
               .fixedSize(horizontal: false, vertical: true)
-            Text("Apple Intelligence removal builds on [pared](https://github.com/4evy/pared) by 4evy.")
+            Text("Apple 智能移除功能基于 4evy 的 [pared](https://github.com/4evy/pared) 项目。")
               .font(.callout)
               .foregroundStyle(.tertiary)
               .tint(.secondary)
           }
-          Text("This Mac")
+          Text("本机状态")
         }
         .textCase(nil)
         .padding(.top, 4)
@@ -53,11 +53,11 @@ struct OverviewView: View {
             VStack(alignment: .leading, spacing: 3) {
               Text(preset.title).font(.headline)
               Text(preset.summary).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-              Text("\(Tweaks.preset(preset).count) tweaks and Apple Intelligence off")
+              Text("\(Tweaks.preset(preset).count) 项系统调整，并关闭 Apple 智能")
                 .font(.caption).foregroundStyle(.tertiary)
             }
             Spacer()
-            Button("Choose…") {
+            Button("选择…") {
               model.choose(preset)
               model.reviewing = true
             }
@@ -65,26 +65,26 @@ struct OverviewView: View {
           .padding(.vertical, 4)
         }
       } header: {
-        Text("Start with a preset")
+        Text("从预设方案开始")
       } footer: {
-        Footer("A preset adds to what's already applied and changes nothing until you review it. Pick single tweaks in the sidebar.")
+        Footer("预设会在已应用的调整上增加选项，检查并确认后才会生效。也可在侧边栏逐项选择。")
       }
     }
     .formStyle(.grouped)
-    .navigationTitle("Overview")
+    .navigationTitle("概览")
   }
 
   var aiText: String {
-    if model.currentAI != nil { return model.modelTotal > 0 ? "Off, \(Term.size(model.modelTotal)) of models still on disk" : "Off" }
-    if model.loadingModels { return "On" }
-    return model.modelTotal > 0 ? "On, \(Term.size(model.modelTotal)) of models" : "On"
+    if model.currentAI != nil { return model.modelTotal > 0 ? "已关闭，磁盘上仍有 \(Term.size(model.modelTotal)) 的模型" : "已关闭" }
+    if model.loadingModels { return "已开启" }
+    return model.modelTotal > 0 ? "已开启，模型占用 \(Term.size(model.modelTotal))" : "已开启"
   }
 
   var backgroundText: String {
     let n = model.background.count
-    if n == 0 { return "None" }
+    if n == 0 { return "无" }
     let off = model.backgroundOff.count
-    return off > 0 ? "\(n), \(off) turned off" : "\(n) running"
+    return off > 0 ? "共 \(n) 项，已关闭 \(off) 项" : "\(n) 项运行中"
   }
 }
 
@@ -121,14 +121,14 @@ struct IntelligenceView: View {
       Section {
         Toggle(isOn: $model.aiOff) {
           VStack(alignment: .leading, spacing: 3) {
-            Text("Turn off Apple Intelligence").font(.headline)
-            Text("Turns off Siri, Writing Tools, Genmoji, Image Playground, summaries and ChatGPT, deletes the models and stops macOS downloading them again.")
+            Text("关闭 Apple 智能").font(.headline)
+            Text("关闭 Siri、写作工具、智绘表情、图乐园、摘要及 ChatGPT 集成功能，删除相关模型，并阻止 macOS 再次下载。")
               .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
           }
         }
         .toggleStyle(.switch)
       } footer: {
-        Footer("macOS asks you to approve a configuration profile for this. Undo puts everything back. This part builds on pared by 4evy, which first mapped Apple's asset service and model sets.")
+        Footer("此操作需要在 macOS 中批准安装配置描述文件，撤销可恢复相关设置。本功能基于 4evy 的 pared 项目，该项目率先梳理了 Apple 的资源服务与模型集。")
       }
 
       Section {
@@ -145,48 +145,48 @@ struct IntelligenceView: View {
           .disabled(!model.aiOff)
         }
       } header: {
-        Text("Keep these on")
+        Text("保留以下功能")
       } footer: {
-        Footer("A kept feature keeps the models it needs.")
+        Footer("保留某项功能时，也会保留该功能所需的模型。")
       }
 
       Section {
         if model.loadingModels {
-          HStack { ProgressView().controlSize(.small); Text("Asking Apple's asset service…").foregroundStyle(.secondary) }
+          HStack { ProgressView().controlSize(.small); Text("正在查询 Apple 资源服务…").foregroundStyle(.secondary) }
         } else if !model.modelsAvailable {
-          Text("Apple's asset service didn't answer, so the sizes are unknown.").foregroundStyle(.secondary)
+          Text("Apple 资源服务未响应，暂时无法确定模型大小。").foregroundStyle(.secondary)
         } else {
           ForEach(Catalog.modelSets, id: \.name) { set in
             LabeledContent(set.title) {
               let bytes = model.modelBytes[set.name] ?? 0
-              Text(bytes > 0 ? Term.size(bytes) : "None").foregroundStyle(bytes > 0 ? .primary : .secondary)
+              Text(bytes > 0 ? Term.size(bytes) : "无").foregroundStyle(bytes > 0 ? .primary : .secondary)
             }
           }
-          LabeledContent("Total") { Text(Term.size(model.modelTotal)).fontWeight(.semibold) }
+          LabeledContent("合计") { Text(Term.size(model.modelTotal)).fontWeight(.semibold) }
           if model.currentAI != nil && model.modelTotal > 0 {
             HStack {
-              Text("Apple Intelligence is off, but these models are still on disk.").foregroundStyle(.secondary)
+              Text("Apple 智能已关闭，但这些模型仍在磁盘上。").foregroundStyle(.secondary)
               Spacer()
-              Button("Delete Models") { model.deleteLeftoverModels() }
+              Button("删除剩余模型") { model.deleteLeftoverModels() }
             }
           }
         }
       } header: {
-        Text("Models on disk")
+        Text("磁盘上的模型")
       } footer: {
-        Footer("macOS deletes the files on its own schedule, so Storage settings can count them for a while after removal.")
+        Footer("macOS 会自行安排文件删除，因此移除后“储存空间”可能暂时仍显示这些文件的占用。")
       }
     }
     .formStyle(.grouped)
-    .navigationTitle("Apple Intelligence")
+    .navigationTitle("Apple 智能")
   }
 
   func stateText(_ id: String) -> String {
     switch model.featureStates[id] {
-    case .lockedOff?: return "Off, locked by RemoveMacAI"
-    case .off?: return "Off"
-    case .on?: return "On"
-    default: return model.loadingModels ? "Checking…" : "Unknown"
+    case .lockedOff?: return "已关闭，由 RemoveMacAI 锁定"
+    case .off?: return "已关闭"
+    case .on?: return "已开启"
+    default: return model.loadingModels ? "正在检查…" : "未知"
     }
   }
 }
@@ -207,7 +207,7 @@ struct TweakGroupView: View {
         Text(group.summary).font(.body).foregroundStyle(.secondary).textCase(nil)
       } footer: {
         if tweaks.contains(where: \.inProfile) {
-          Footer("Settings with a lock are applied by the RemoveMacAI profile, which macOS asks you to approve.")
+          Footer("带锁图标的设置通过 RemoveMacAI 描述文件应用，需要在 macOS 中手动批准。")
         }
       }
     }
@@ -216,8 +216,8 @@ struct TweakGroupView: View {
     .toolbar {
       ToolbarItem {
         Menu {
-          Button("Select All") { for t in tweaks where t.supported { model.toggle(t, true) } }
-          Button("Select Recommended") {
+          Button("全选") { for t in tweaks where t.supported { model.toggle(t, true) } }
+          Button("选择推荐项") {
             for t in tweaks {
               let recommended = t.presets.contains(.recommended)
               if model.state(t) == .partial && !recommended {
@@ -227,9 +227,9 @@ struct TweakGroupView: View {
               }
             }
           }
-          Button("Deselect All") { for t in tweaks { model.toggle(t, false) } }
+          Button("取消全选") { for t in tweaks { model.toggle(t, false) } }
         } label: {
-          Label("Select", systemImage: "checklist")
+          Label("选择", systemImage: "checklist")
         }
       }
     }
@@ -249,7 +249,7 @@ struct TweakRow: View {
           Text(tweak.title)
           if tweak.inProfile {
             Image(systemName: "lock.fill").font(.caption2).foregroundStyle(.tertiary)
-              .help("Locked by the RemoveMacAI profile")
+              .help("由 RemoveMacAI 描述文件锁定")
           }
           if let note = pendingNote(state: state, wanted: wanted, undoes: model.undoes(tweak)) {
             Text(note).font(.caption.weight(.medium)).foregroundStyle(.tint)
@@ -260,11 +260,11 @@ struct TweakRow: View {
           Label(caveat, systemImage: "exclamationmark.triangle").font(.caption).foregroundStyle(.orange)
         }
         if state == .managed {
-          Text("Managed by another profile on this Mac.").font(.caption).foregroundStyle(.secondary)
+          Text("由本机的其他描述文件管理。").font(.caption).foregroundStyle(.secondary)
         } else if state == .unsupported {
-          Text("Needs macOS \(tweak.since.0).\(tweak.since.1) or newer.").font(.caption).foregroundStyle(.secondary)
+          Text("需要 macOS \(tweak.since.0).\(tweak.since.1) 或更新版本。").font(.caption).foregroundStyle(.secondary)
         } else if state == .partial {
-          Text("Partly applied. It stays as it is unless you switch it.").font(.caption).foregroundStyle(.secondary)
+          Text("已部分应用。只有操作此开关才会改变当前状态。").font(.caption).foregroundStyle(.secondary)
         }
       }
       .padding(.vertical, 2)
@@ -274,8 +274,8 @@ struct TweakRow: View {
   }
 
   func pendingNote(state: TweakState, wanted: Bool, undoes: Bool) -> String? {
-    if wanted && state != .applied { return "Applies on review" }
-    if undoes { return "Undoes on review" }
+    if wanted && state != .applied { return "确认后应用" }
+    if undoes { return "确认后撤销" }
     return nil
   }
 }
@@ -289,7 +289,7 @@ struct BackgroundView: View {
     Form {
       Section {
         if model.background.isEmpty {
-          Text("No background items from other apps.").foregroundStyle(.secondary)
+          Text("未发现其他应用的后台项目。").foregroundStyle(.secondary)
         }
         ForEach(model.background) { item in
           Toggle(isOn: Binding(
@@ -300,7 +300,7 @@ struct BackgroundView: View {
               HStack(spacing: 6) {
                 Text(item.owner)
                 if item.system {
-                  Text("All users").font(.caption2.weight(.medium)).padding(.horizontal, 5).padding(.vertical, 1)
+                  Text("所有用户").font(.caption2.weight(.medium)).padding(.horizontal, 5).padding(.vertical, 1)
                     .background(Capsule().fill(.quaternary))
                 }
               }
@@ -316,17 +316,17 @@ struct BackgroundView: View {
           .disabled(model.backgroundBusy)
         }
       } header: {
-        Text("Updaters, helpers and agents other apps installed. They run whether or not their app is open. Switching one off takes effect at once. Updaters are safe to switch off; a helper can be what makes its app work, such as a VPN or Docker.")
+        Text("这里列出其他应用安装的更新程序、辅助程序和代理，它们可能在主应用关闭后继续运行。关闭开关会立即生效。关闭更新程序会停止其后台更新；VPN、Docker 等应用的辅助程序可能是正常运行所必需的。")
           .font(.body).foregroundStyle(.secondary).textCase(nil)
       } footer: {
-        Footer("Items marked All users ask for your password. Apple's own background services are protected by System Integrity Protection, so RemoveMacAI leaves them alone.")
+        Footer("标注“所有用户”的项目需要输入管理员密码。Apple 自带的后台服务受系统完整性保护（SIP）保护，RemoveMacAI 不会修改它们。")
       }
     }
     .formStyle(.grouped)
-    .navigationTitle("Background Items")
+    .navigationTitle("后台项目")
     .toolbar {
       ToolbarItem {
-        Button { model.loadBackground() } label: { Label("Reload", systemImage: "arrow.clockwise") }
+        Button { model.loadBackground() } label: { Label("重新载入", systemImage: "arrow.clockwise") }
       }
     }
   }
@@ -350,19 +350,19 @@ struct StorageView: View {
           HStack(spacing: 14) {
             Image(systemName: "internaldrive").font(.title).foregroundStyle(.tint)
             VStack(alignment: .leading, spacing: 3) {
-              Text("Find space you can get back").font(.headline)
-              Text("Looks for old installers, aerial videos, Xcode leftovers, app caches and Time Machine snapshots. Nothing moves until you choose.")
+              Text("查找可回收的空间").font(.headline)
+              Text("查找旧安装程序、航拍壁纸视频、Xcode 残留、应用缓存和时间机器快照。扫描本身不会移动或删除文件。")
                 .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
-            if model.scanning { ProgressView().controlSize(.small) } else { Button("Scan") { model.scan() } }
+            if model.scanning { ProgressView().controlSize(.small) } else { Button("扫描") { model.scan() } }
           }
           .padding(.vertical, 4)
         }
       } else {
         Section {
           if model.storage.isEmpty {
-            Text("Nothing to clean up.").foregroundStyle(.secondary)
+            Text("没有可清理的项目。").foregroundStyle(.secondary)
           }
           ForEach(model.storage) { item in
             HStack(alignment: .top, spacing: 10) {
@@ -380,16 +380,16 @@ struct StorageView: View {
                 }
               }
               Spacer()
-              Text(item.kind == .snapshots ? "\(item.count) snapshot\(item.count == 1 ? "" : "s")" : Term.size(item.bytes))
+              Text(item.kind == .snapshots ? "\(item.count) 个快照" : Term.size(item.bytes))
                 .monospacedDigit().foregroundStyle(.secondary)
             }
             .padding(.vertical, 2)
           }
         } header: {
           HStack {
-            Text("Files go to the Trash, so they aren't gone until you empty it. Simulators and snapshots are deleted right away.").textCase(nil)
+            Text("普通文件移入废纸篓，清倒后才会彻底删除；模拟器与快照会立即永久删除。").textCase(nil)
             Spacer()
-            if model.scanning { ProgressView().controlSize(.small) } else { Button("Scan Again") { model.scan() }.buttonStyle(.link) }
+            if model.scanning { ProgressView().controlSize(.small) } else { Button("重新扫描") { model.scan() }.buttonStyle(.link) }
           }
         }
         Section {
@@ -397,11 +397,11 @@ struct StorageView: View {
             if let message = model.cleanMessage {
               Text(message).foregroundStyle(.secondary)
             } else {
-              Text(model.storageChosen.isEmpty ? "Nothing selected" : "Selected: \(Term.size(model.chosenBytes))").monospacedDigit()
+              Text(model.storageChosen.isEmpty ? "尚未选择项目" : "已选：\(Term.size(model.chosenBytes))").monospacedDigit()
             }
             Spacer()
             if model.cleaning { ProgressView().controlSize(.small) }
-            Button(permanentChosen.isEmpty ? "Move to Trash…" : "Remove…") { confirming = true }
+            Button(permanentChosen.isEmpty ? "移到废纸篓…" : "移除…") { confirming = true }
               .buttonStyle(.borderedProminent)
               .disabled(model.storageChosen.isEmpty || model.cleaning)
           }
@@ -409,15 +409,15 @@ struct StorageView: View {
       }
     }
     .formStyle(.grouped)
-    .navigationTitle("Storage")
+    .navigationTitle("储存空间")
     .confirmationDialog(
-      permanentChosen.isEmpty ? "Move the selected items to the Trash?" : "Remove the selected items?",
+      permanentChosen.isEmpty ? "将所选项目移到废纸篓？" : "移除所选项目？",
       isPresented: $confirming
     ) {
-      Button(permanentChosen.isEmpty ? "Move to Trash" : "Remove") { model.clean() }
+      Button(permanentChosen.isEmpty ? "移到废纸篓" : "移除") { model.clean() }
     } message: {
-      Text("About \(Term.size(model.chosenBytes)). Items only an administrator can move ask for your password."
-        + (permanentChosen.isEmpty ? "" : " \(permanentChosen.joined(separator: " and ")) are deleted right away, not moved to the Trash."))
+      Text("约 \(Term.size(model.chosenBytes))。移动仅管理员可操作的项目时，需要输入密码。"
+        + (permanentChosen.isEmpty ? "" : "其中，\(permanentChosen.joined(separator: "、"))将立即永久删除，不会移入废纸篓。"))
     }
   }
 }
@@ -430,21 +430,21 @@ struct ChangesView: View {
 
   var body: some View {
     Form {
-      Section("Profile") {
+      Section("配置描述文件") {
         if model.snapshot.profile.on {
-          LabeledContent("RemoveMacAI profile", value: "Installed")
-          if model.currentAI != nil { Label("Apple Intelligence off", systemImage: "apple.intelligence") }
+          LabeledContent("RemoveMacAI 描述文件", value: "已安装")
+          if model.currentAI != nil { Label("Apple 智能已关闭", systemImage: "apple.intelligence") }
           ForEach(model.snapshot.profile.tweaks.sorted(), id: \.self) { id in
             Label(Tweaks.tweak(id)?.title ?? id, systemImage: "lock.fill")
           }
         } else {
-          Text("Not installed.").foregroundStyle(.secondary)
+          Text("尚未安装。").foregroundStyle(.secondary)
         }
       }
-      Section("Other changes") {
+      Section("其他更改") {
         let entries = model.journal.entries.sorted { $0.value.date > $1.value.date }
         if entries.isEmpty {
-          Text("None.").foregroundStyle(.secondary)
+          Text("无。").foregroundStyle(.secondary)
         }
         ForEach(entries, id: \.key) { key, entry in
           LabeledContent {
@@ -459,26 +459,26 @@ struct ChangesView: View {
       }
       Section {
         HStack {
-          Text("Puts every setting back as it was before RemoveMacAI changed it, and removes the profile.")
+          Text("将设置恢复至 RemoveMacAI 修改前的状态，并移除描述文件。")
             .foregroundStyle(.secondary)
           Spacer()
-          Button("Undo Everything…", role: .destructive) { confirming = true }
+          Button("撤销全部更改…", role: .destructive) { confirming = true }
             .disabled(!model.snapshot.profile.on && model.journal.entries.isEmpty)
         }
       }
     }
     .formStyle(.grouped)
-    .navigationTitle("Undo")
-    .confirmationDialog("Undo everything RemoveMacAI changed?", isPresented: $confirming) {
-      Button("Undo Everything", role: .destructive) { model.undoEverything() }
+    .navigationTitle("撤销更改")
+    .confirmationDialog("撤销 RemoveMacAI 所做的全部设置更改？", isPresented: $confirming) {
+      Button("撤销全部更改", role: .destructive) { model.undoEverything() }
     } message: {
-      Text("macOS asks you to remove the profile in System Settings. Deleted models download again when a feature needs them, and files in the Trash stay there.")
+      Text("macOS 会要求你在“系统设置”中移除描述文件。已删除的模型会在使用相关功能时重新下载；废纸篓中的文件不会自动还原。")
     }
   }
 
   func title(_ id: String) -> String {
     if let t = Tweaks.tweak(id) { return t.title }
-    if let item = model.background.first(where: { $0.id == id }) { return "Background item: \(item.owner)" }
+    if let item = model.background.first(where: { $0.id == id }) { return "后台项目：\(item.owner)" }
     return id
   }
 }

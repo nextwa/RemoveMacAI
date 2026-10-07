@@ -33,7 +33,7 @@ enum Profile {
 
   static func data(_ contents: Contents) throws -> Data {
     var restrictions = payload(
-      type: "com.apple.applicationaccess", suffix: "restrictions", name: "Restrictions")
+      type: "com.apple.applicationaccess", suffix: "restrictions", name: "限制设置")
     var forced: [String: [String: Any]] = [:]
 
     if let kept = contents.ai {
@@ -63,7 +63,7 @@ enum Profile {
     let preferences = forced.keys.sorted().map { domain -> [String: Any] in
       var p = payload(
         type: "com.apple.ManagedClient.preferences", suffix: "preferences." + domain,
-        name: "Forced settings: \(domain)")
+        name: "强制设置：\(domain)")
       p["PayloadContent"] = [domain: ["Forced": [["mcx_preference_settings": forced[domain]!]]]]
       return p
     }
@@ -75,7 +75,7 @@ enum Profile {
       "PayloadUUID": uuid(identifier),
       "PayloadDisplayName": "RemoveMacAI",
       "PayloadDescription":
-        "Turns off Apple Intelligence and the settings chosen in RemoveMacAI, and stops removed models downloading again. Remove this profile to undo.",
+        "关闭 Apple 智能及 RemoveMacAI 中选定的功能，并阻止已移除的模型再次下载。移除此描述文件可撤销其中的设置。",
       "PayloadOrganization": "RemoveMacAI",
       "PayloadScope": "System",
       "PayloadRemovalDisallowed": false,

@@ -1,185 +1,47 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screens/overview-dark.webp">
-    <img src="docs/screens/overview-light.webp" alt="The RemoveMacAI app" width="840">
-  </picture>
-</p>
+# RemoveMacAI 中文版
 
-<p align="center">
-  <a href="https://trendshift.io/repositories/275773?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-275773" target="_blank" rel="noopener noreferrer"><img src="https://raw.githubusercontent.com/omlahore/omlahore/main/profile/trendshift-daily.svg" alt="omlahore%2FRemoveMacAI | Trendshift" width="250" height="55"/></a> <a href="https://trendshift.io/repositories/275773?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-275773" target="_blank" rel="noopener noreferrer"><img src="https://raw.githubusercontent.com/omlahore/omlahore/main/profile/trendshift-weekly.svg" alt="omlahore%2FRemoveMacAI | Trendshift" width="250" height="55"/></a>
-</p>
+[下载 DMG](https://github.com/nextwa/RemoveMacAI/releases/latest) · [详细中文指南](README.zh-Hans.md) · [上游项目](https://github.com/omlahore/RemoveMacAI)
 
-# RemoveMacAI
+基于 RemoveMacAI v1.0.1 的简体中文版本。精简 macOS 的 Apple 智能、隐私、访达、程序坞及输入设置，查看后台项目和可清理空间，并支持撤销设置更改。
 
-Debloat macOS. Turn off Apple Intelligence and delete its models, stop the analytics and ads, quiet the pop-ups, switch off other apps' background updaters and get disk space back. You see every change before it happens, and every change can be undone.
+## 安装
 
-<p align="center">
-  <a href="https://github.com/omlahore/RemoveMacAI/releases/latest/download/RemoveMacAI.zip"><img src="docs/download.svg" alt="Download for Mac" width="236" height="56"></a>
-</p>
+1. 在 [Releases](https://github.com/nextwa/RemoveMacAI/releases/latest) 下载 `RemoveMacAI-1.0.1-zh-Hans.1-arm64.dmg`。
+2. 打开 DMG，将 **RemoveMacAI 中文版** 拖到 **Applications（应用程序）**。
+3. 从“应用程序”启动。首次打开若被 macOS 拦截，前往 **系统设置 → 隐私与安全性 → 仍要打开**。
 
-<p align="center">
-  <a href="https://omlahore.github.io/RemoveMacAI/">omlahore.github.io/RemoveMacAI</a>
-</p>
+适用 Apple 芯片 Mac；已在 macOS 27.0.1 上验证。可与英文版并存，共用原有设置记录和配置描述文件。
 
-Built on [pared](https://github.com/4evy/pared) by 4evy, who did the hard work first: mapping Apple's asset service, the model sets and the settings keys the Apple Intelligence part relies on.
+## 汉化范围
 
-[Ars Technica](https://arstechnica.com/apple/2026/10/command-line-tool-quickly-removes-apple-intelligence-from-macos-27/), [MacRumors](https://www.macrumors.com/2026/10/05/apple-intelligence-removal-tool-frees-mac-storage/), [AppleInsider](https://appleinsider.com/articles/26/10/05/dumb-down-your-mac-save-12gb-by-removing-apple-intelligence) and [Help Net Security](https://www.helpnetsecurity.com/2026/10/05/removemacai-turn-off-apple-intelligence/) have written about RemoveMacAI, and [Daring Fireball](https://daringfireball.net/linked/2026/10/06/cli-tool-removes-apple-intelligence-from-macos-27) linked to it.
+- 11 个页面，40 项系统调整的名称、解释和注意事项。
+- 14 项 AI 功能，5 类模型名称，2 种预设。
+- 操作预览、描述文件授权引导、执行结果与错误提示。
+- 命令行帮助和输出；技术标识、参数及 JSON 字段保持原格式。
+- [详细指南](README.zh-Hans.md)：中英文对照、功能说明、清理行为、恢复方法及命令行示例。
 
-## Install
+系统调整在“检查并应用”后执行；后台项目开关立即生效。普通清理文件移入废纸篓，模拟器和时间机器本地快照会永久删除。
 
-### The app
+## 验证
 
-Open Terminal (Applications > Utilities), paste this line and press Return:
+发布应用编译、签名验证及 70 项上游自测通过。正式应用已在 Apple 芯片、macOS 27.0.1 上启动并检查中文界面。预览与实际执行使用相同的撤销选择。
+
+## 构建
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/omlahore/RemoveMacAI/main/install.sh | bash -s app
+bash tools/build-app.sh
+.build/release/removemacai selftest
+python3 -m venv .build/dmg-venv
+.build/dmg-venv/bin/pip install -r tools/dmg-requirements.txt
+.build/dmg-venv/bin/python tools/build-dmg.py
 ```
 
-It downloads the latest release, checks its SHA-256 checksum, puts RemoveMacAI in Applications and opens it.
+构建工具读取 `SDKROOT`，未设置时使用当前开发工具的 SDK。应用输出到 `.build/RemoveMacAI 中文版.app`，DMG 输出到 `dist/`。发布所用环境及 SDK 指定方法见[中文指南](README.zh-Hans.md#源码与构建)。
 
-To download it yourself instead, get `RemoveMacAI.zip` from the [latest release](https://github.com/omlahore/RemoveMacAI/releases/latest), unzip it and drag RemoveMacAI to Applications. The app is not notarized, so the first time you open it macOS says it can't verify it. Open System Settings > Privacy & Security, scroll down and click Open Anyway.
+## 已知限制
 
-### The command line
+本版本使用本地签名，未经过 Apple 公证。macOS 自带窗口、第三方名称及系统原始错误可能保留英文。验证不包含实际删除用户文件或模型；上游新版本需单独合并汉化。此版本未提供自动更新。
 
-```sh
-curl -fsSL https://raw.githubusercontent.com/omlahore/RemoveMacAI/main/install.sh | bash
-```
+## 来源与许可证
 
-This runs the command-line version from a temporary folder and installs nothing. With Homebrew:
-
-```sh
-brew install omlahore/tap/removemacai
-```
-
-The app and the command line are the same program and share the same undo history.
-
-## What it does
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screens/privacy-dark.webp">
-    <img src="docs/screens/privacy-light.webp" alt="Privacy settings in RemoveMacAI" width="840">
-  </picture>
-</p>
-
-| Section | What you can turn off or change |
-|---|---|
-| Apple Intelligence | Siri, Writing Tools, Genmoji, Image Playground, ChatGPT, summaries in Mail, Messages, Safari, Notes and notifications, inline predictions, Spatial Photos, Photos Clean Up, Xcode predictive completion. The models are deleted and blocked from downloading again. Keep any feature you use. |
-| Privacy | Mac Analytics, personalized ads, Improve Siri and Dictation, Improve Search, Spotlight internet results, Look Up suggestions, Safari search suggestions, Game Center |
-| Annoyances | Clicking the wallpaper hiding every window, desktop widgets, the play key opening Music, iPhone Mirroring |
-| Apple apps | Apple Music in the Music app, the Book Store, unused Apple apps in the Dock |
-| Finder | File extensions, hidden files, the path and status bars, folders first, searching the current folder, the extension warning, `.DS_Store` files on network drives, emptying the Trash after 30 days, saving to your Mac instead of iCloud, the Library folder |
-| Dock and windows | Recent apps, the auto-hide delay, bouncing icons, minimizing into the app icon, window animations, gaps between tiled windows, screenshot shadows |
-| Typing | Autocorrect, smart quotes and dashes, the double-space period, automatic capitals, the accent menu on held keys |
-| Background items | Updaters and helpers other apps install, such as Google's updater, shown with what they run and switched off one by one |
-| Storage | Old macOS installers, aerial wallpaper videos, iPhone and iPad update files, Xcode build data and device support, unavailable simulators, app caches, Time Machine local snapshots, and Apple's optional apps (GarageBand and its sound library, iMovie, Keynote, Numbers, Pages) |
-
-Two presets get you started. **Recommended** turns Apple Intelligence, analytics and ads off and removes the pop-ups, and leaves alone anything you rely on. **Maximum privacy** adds Game Center and Safari's search suggestions. Both add to what is already applied, and nothing changes until you review it.
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screens/review-dark.webp">
-    <img src="docs/screens/review-light.webp" alt="Reviewing changes before they are applied" width="600">
-  </picture>
-</p>
-
-## Command line
-
-| Command | Description |
-|---|---|
-| `removemacai` | Show the state of Apple Intelligence, then turn it off |
-| `removemacai status` | Show each Apple Intelligence feature and the size of its models |
-| `removemacai off --keep <features>` | Turn Apple Intelligence off but leave the listed features on |
-| `removemacai on` | Turn Apple Intelligence back on and keep the other changes |
-| `removemacai tweaks` | List every tweak and whether it is applied (`--json` for scripts) |
-| `removemacai apply <tweaks>` | Apply tweaks by name |
-| `removemacai apply --preset recommended` | Apply a preset, Apple Intelligence off included |
-| `removemacai undo <tweaks>` | Undo tweaks by name |
-| `removemacai background` | List other apps' background items; `off` or `on` with their labels |
-| `removemacai clean` | Show the space you can get back; name items to move them to the Trash |
-| `removemacai export <file>` | Write the configuration profile for an MDM |
-| `removemacai revert` | Undo everything RemoveMacAI changed |
-| `removemacai app` | Open the app |
-
-`apply`, `undo`, `background` and `clean` show the change first and ask. `--dry-run` shows it and stops, and `--yes` skips the question.
-
-<p align="center">
-  <img src="docs/terminal.gif" alt="RemoveMacAI turning off Apple Intelligence in Terminal" width="840">
-</p>
-
-<p align="center"><a href="docs/demo.mp4">Demo video</a></p>
-
-## For Mac admins
-
-`removemacai export` writes the same configuration profile the app installs, so you can deploy it with Jamf, Kandji, Intune or any other MDM:
-
-```sh
-removemacai export RemoveMacAI.mobileconfig --preset recommended
-removemacai export AI-off.mobileconfig --keep writing-tools
-removemacai export Privacy.mobileconfig --no-ai analytics personalized-ads spotlight-web
-```
-
-It holds the Apple Intelligence restrictions, the download block for removed models and the locked tweaks. Per-user tweaks such as Finder and Dock settings aren't in the profile; `removemacai apply` sets those on each Mac. `removemacai tweaks --json` reports the state of every tweak for compliance scripts.
-
-## How it works
-
-- **Locked settings** (Apple Intelligence and the tweaks marked with a lock) go in one configuration profile that you approve in System Settings, because macOS requires that. Removing the profile undoes all of them.
-- **Other settings** are written the way `defaults write` writes them. RemoveMacAI first records each setting's previous value in `~/Library/Application Support/RemoveMacAI/journal.json`, and undo puts back exactly that value.
-- **Models** are removed through Apple's asset service, and the profile points their downloads at a closed local port so macOS doesn't fetch them again.
-- **Storage** cleanup moves files to the Trash, so they aren't gone until you empty it. Unavailable simulators and Time Machine local snapshots are deleted right away by `simctl` and `tmutil`.
-
-System Integrity Protection stays on, nothing under `/System` is modified, and RemoveMacAI makes no network requests and collects no data.
-
-## What it doesn't do
-
-- **Delete Apple's built-in apps.** They live on the sealed system volume. Removing them needs System Integrity Protection off, and a failed attempt can leave the Mac unable to start. RemoveMacAI quiets them instead and removes the optional apps that Apple lets you delete.
-- **Mass-disable Apple's background services.** With System Integrity Protection on, macOS refuses to unload most of them, and many start again whenever an app asks for them. RemoveMacAI switches off the one that unloads cleanly (the play key opening Music) and other apps' background items.
-
-## FAQ
-
-**Does dictation still work?**
-Yes. Dictation is a separate setting, and its speech models are not removed.
-
-**Where do I use Photos Clean Up after keeping it enabled?**
-Open a photo in Photos, choose **Edit**, then **Tools > Clean Up**. Photos Clean Up is not a separate switch in System Settings.
-
-**Do macOS updates undo the changes?**
-The profile persists across updates. If an update resets one of the other settings, RemoveMacAI shows it as not applied and you can apply it again.
-
-**Storage settings still lists Apple Intelligence after the models were deleted.**
-Apple's asset service releases the models right away, but macOS deletes the files on its own schedule. Until then, System Settings > General > Storage keeps counting them under Apple Intelligence.
-
-**Why is a process named Siri still running?**
-In macOS 27 the Spotlight window runs as a process named Siri. Some system services also stay loaded; they are protected by System Integrity Protection.
-
-**What stops working when Apple Intelligence is off?**
-The features listed above, apps that use Apple's on-device models (the Foundation Models framework and the Use Model action in Shortcuts), Visual Intelligence and natural-language editing in Calendar.
-
-## Requirements
-
-Apple silicon.
-
-| macOS | Status |
-|---|---|
-| 27 | Supported, tested on 27.0. On 27.0.1, use 0.2.3 or later. |
-| 26 and earlier | Not supported |
-
-## Uninstall
-
-Run `removemacai revert` or click Undo Everything in the app, then delete the app or run `brew uninstall removemacai`.
-
-## Acknowledgements
-
-The Apple Intelligence part of RemoveMacAI is built on [pared](https://github.com/4evy/pared), a complete working tool by 4evy that first mapped the asset service, the model sets and several of the settings keys. Its license is in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
-
-## Support
-
-If RemoveMacAI is useful to you, you can [sponsor it on GitHub](https://github.com/sponsors/omlahore).
-
-## Author
-
-I'm [Om Lahore](https://github.com/omlahore) and I'm open to new roles. You can reach me on [LinkedIn](https://linkedin.com/in/om-lahorey) or at omlahorey@gmail.com.
-
-## License
-
-[MIT](LICENSE)
+原作者：[Om Lahore](https://github.com/omlahore)。Apple 智能移除功能基于 [4evy/pared](https://github.com/4evy/pared)。本项目为独立维护的中文 fork，保留 [MIT 许可证](LICENSE)和[第三方声明](THIRD-PARTY-NOTICES.md)。[上游说明](README.upstream.md)。

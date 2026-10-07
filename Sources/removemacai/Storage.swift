@@ -72,40 +72,40 @@ enum Storage {
     let wallpaper = home + "/Library/Application Support/com.apple.wallpaper"
     let aerialsInUse = plistText(wallpaper + "/Store/Index.plist").contains("aerial")
     items.append(files(
-      id: "aerials", title: "Aerial wallpaper videos",
-      detail: "Videos for the moving aerial wallpapers and screen savers. macOS downloads one again when you choose it.",
-      caveat: aerialsInUse ? "You use an aerial wallpaper or screen saver now, so macOS will download it again." : nil,
+      id: "aerials", title: "航拍壁纸视频",
+      detail: "用于动态航拍壁纸和屏幕保护程序的视频。再次选择相应壁纸时，macOS 会重新下载。",
+      caveat: aerialsInUse ? "你正在使用航拍壁纸或屏幕保护程序，macOS 之后会重新下载它。" : nil,
       paths: children(wallpaper + "/aerials/videos")
         + children("/Library/Application Support/com.apple.idleassetsd/Customer")))
 
     items.append(files(
-      id: "installers", title: "macOS installers",
-      detail: "Old \"Install macOS\" apps left in Applications after an upgrade.",
+      id: "installers", title: "macOS 安装程序",
+      detail: "系统升级后留在“应用程序”中的旧版“安装 macOS”应用。",
       paths: children("/Applications").filter {
         let name = ($0 as NSString).lastPathComponent
         return name.hasPrefix("Install macOS") && name.hasSuffix(".app")
       }))
 
     items.append(files(
-      id: "ios-firmware", title: "iPhone and iPad updates",
-      detail: "Software update files Finder downloaded for iPhones and iPads. They download again when needed.",
+      id: "ios-firmware", title: "iPhone 与 iPad 更新文件",
+      detail: "访达为 iPhone 和 iPad 下载的软件更新文件，需要时会重新下载。",
       paths: children(home + "/Library/iTunes/iPhone Software Updates")
         + children(home + "/Library/iTunes/iPad Software Updates")))
 
     let xcode = home + "/Library/Developer/Xcode"
     items.append(files(
-      id: "derived-data", title: "Xcode build data",
-      detail: "Xcode's DerivedData folder. Xcode rebuilds it on the next build.",
+      id: "derived-data", title: "Xcode 构建数据",
+      detail: "Xcode 的 DerivedData 文件夹，下次构建时会重新生成。",
       paths: children(xcode + "/DerivedData")))
     items.append(files(
-      id: "device-support", title: "Xcode device support",
-      detail: "Debug symbols Xcode copied from each iPhone, iPad and Watch you connected. They copy again on the next connection.",
+      id: "device-support", title: "Xcode 设备支持文件",
+      detail: "Xcode 从连接过的 iPhone、iPad 和 Apple Watch 复制的调试符号，再次连接时会重新复制。",
       paths: ["iOS", "watchOS", "tvOS", "visionOS"].flatMap { children(xcode + "/\($0) DeviceSupport") }))
 
     var simulators = StorageItem(
-      id: "simulators", title: "Unavailable simulators",
-      detail: "Simulators for runtimes that are no longer installed, so they can't run.",
-      caveat: "Deleted right away, not moved to the Trash.", kind: .simulators)
+      id: "simulators", title: "不可用的模拟器",
+      detail: "对应运行环境已被移除、因此无法运行的模拟器。",
+      caveat: "会立即永久删除，不会移入废纸篓。", kind: .simulators)
     let unavailable = unavailableSimulators()
     simulators.paths = unavailable
     simulators.count = unavailable.count
@@ -113,9 +113,9 @@ enum Storage {
     items.append(simulators)
 
     items.append(files(
-      id: "caches", title: "App caches",
-      detail: "Files apps keep to load faster. Apps rebuild them, so the first launch afterwards can be slower.",
-      caveat: "Quit your apps first. The macOS caches RemoveMacAI knows about are left alone.",
+      id: "caches", title: "应用缓存",
+      detail: "应用为加快加载而保存的文件。清理后会重新生成，首次启动可能变慢。",
+      caveat: "请先退出相关应用。RemoveMacAI 已识别的 macOS 系统缓存会保留。",
       paths: children(home + "/Library/Caches").filter { !isAppleCache($0) }))
 
     let sharing = soundLibraryUsers()
@@ -125,15 +125,15 @@ enum Storage {
       let keepExtra = !app.extra.isEmpty && !sharing.isEmpty
       items.append(files(
         id: app.id, title: app.app,
-        detail: "One of Apple's optional apps. It reinstalls free from the App Store.",
-        caveat: keepExtra ? "Its sound library stays, because \(sharing.joined(separator: " and ")) uses it too." : nil,
+        detail: "Apple 的可选应用，可从 App Store 免费重新安装。",
+        caveat: keepExtra ? "音色库将保留，因为\(sharing.joined(separator: "、"))也在使用它。" : nil,
         paths: [path] + (keepExtra ? [] : app.extra.filter { FileManager.default.fileExists(atPath: $0) })))
     }
 
     var snapshots = StorageItem(
-      id: "snapshots", title: "Time Machine local snapshots",
-      detail: "Hourly copies Time Machine keeps on this disk between backups. macOS counts them as System Data.",
-      caveat: "Deleted right away, not moved to the Trash. Your backups on the backup disk aren't touched.",
+      id: "snapshots", title: "时间机器本地快照",
+      detail: "时间机器在两次备份之间保存在本机磁盘上的每小时快照，macOS 将其计入“系统数据”。",
+      caveat: "会立即永久删除，不会移入废纸篓。备份磁盘上的备份不会受影响。",
       kind: .snapshots)
     snapshots.paths = localSnapshotDates()
     snapshots.count = snapshots.paths.count
@@ -235,13 +235,13 @@ enum Storage {
         }
       case .simulators:
         let run = Shell.run("/usr/bin/xcrun", ["simctl", "delete", "unavailable"])
-        if !run.ok { result.problems.append("Simulators: \(run.output.trimmed)") }
+        if !run.ok { result.problems.append("模拟器：\(run.output.trimmed)") }
       case .snapshots:
         for date in item.paths { adminCommands.append("/usr/bin/tmutil deletelocalsnapshots \(Shell.quote(date))") }
       }
     }
     if !adminCommands.isEmpty {
-      let run = Shell.admin(adminCommands, prompt: "RemoveMacAI needs your password to move items only an administrator can change.")
+      let run = Shell.admin(adminCommands, prompt: "RemoveMacAI 需要你的密码，以移动仅管理员可修改的项目。")
       if !run.ok { result.problems.append(Shell.adminError(run)) }
     }
     return result

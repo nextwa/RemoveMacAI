@@ -1,34 +1,34 @@
 import Foundation
 
 let usage = """
-  RemoveMacAI \(version)
-  Debloats macOS: turns Apple Intelligence off, deletes its models, and turns
-  off analytics, ads and the rest. Every change can be undone.
+  RemoveMacAI 中文版 \(version)
+  精简 macOS：关闭 Apple 智能、移除相关模型、调整分析共享、广告及其他系统设置。
+  系统调整支持撤销；储存空间清理的永久删除项目无法通过撤销恢复。
 
-  Apple Intelligence
-    removemacai                 show what is on, then turn it off (asks first)
-    removemacai status          show what is on and how much space the models take
-    removemacai off [options]   turn it off without the overview
-        --keep a,b              leave these features on (names: removemacai features)
-        --dry-run               show what would change, change nothing
-        --yes                   do not ask
-    removemacai on              turn Apple Intelligence back on, keep the other tweaks
-    removemacai features        list the feature names
+  Apple 智能
+    removemacai                 显示当前状态，然后询问是否关闭
+    removemacai status          显示功能状态及模型占用
+    removemacai off [选项]      关闭 Apple 智能
+        --keep a,b              保留指定功能（标识列表：removemacai features）
+        --dry-run               仅预览，不更改设置
+        --yes                   跳过确认
+    removemacai on              重新启用 Apple 智能，保留其他系统调整
+    removemacai features        列出功能标识及中文名称
 
-  Debloat
-    removemacai tweaks [--json]           list every tweak and whether it is applied
-    removemacai apply <names> [options]   apply tweaks
-        --preset recommended|privacy      apply a preset, Apple Intelligence off included
-        --dry-run, --yes
-    removemacai undo <names>              undo tweaks
-    removemacai background [off|on <labels>]
-                                          other apps' background items
-    removemacai clean [<names>]           show space to get back, move some to the Trash
-    removemacai export <file.mobileconfig> [--preset p] [<names>] [--keep a,b] [--no-ai]
-                                          write the profile for an MDM
+  系统调整
+    removemacai tweaks [--json]           列出所有调整及当前状态
+    removemacai apply <标识> [选项]      应用指定调整
+        --preset recommended|privacy      应用预设，也会关闭 Apple 智能
+        --dry-run, --yes                  仅预览 / 跳过确认
+    removemacai undo <标识>              撤销指定调整
+    removemacai background [off|on <标识>]
+                                         查看、关闭或开启其他应用的后台项目
+    removemacai clean [<标识>]           查看可清理空间或清理指定项目
+    removemacai export <文件.mobileconfig> [--preset p] [<标识>] [--keep a,b] [--no-ai]
+                                         导出供设备管理（MDM）使用的描述文件
 
-    removemacai revert          undo everything RemoveMacAI changed
-    removemacai app             open the RemoveMacAI app
+    removemacai revert          撤销 RemoveMacAI 的全部设置更改
+    removemacai app             打开中文版应用
 
   """
 
@@ -47,7 +47,7 @@ func option(_ name: String) -> String? {
 func presetOption() -> Preset? {
   guard let name = option("--preset") else { return nil }
   guard let preset = Preset(rawValue: name) else {
-    Term.fail("there is no preset called \"\(name)\". Use recommended or privacy")
+    Term.fail("没有名为“\(name)”的预设，请使用 recommended 或 privacy")
   }
   return preset
 }
@@ -55,7 +55,7 @@ func presetOption() -> Preset? {
 // Opened from Finder: the app. With arguments, or from a bare binary: the CLI.
 if args.isEmpty && Bundle.main.bundleURL.pathExtension == "app" || args.first == "app" {
   guard ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 26 else {
-    Term.fail("RemoveMacAI needs macOS 26 or newer")
+    Term.fail("RemoveMacAI 需要 macOS 26 或更新版本")
   }
   Shell.inApp = true
   RemoveMacAIApp.main()
@@ -63,7 +63,7 @@ if args.isEmpty && Bundle.main.bundleURL.pathExtension == "app" || args.first ==
 }
 
 guard args.first == "selftest" || ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 26 else {
-  Term.fail("RemoveMacAI needs macOS 26 or newer")
+  Term.fail("RemoveMacAI 需要 macOS 26 或更新版本")
 }
 
 switch args.first {
@@ -74,7 +74,7 @@ case "off", nil:
   let keep = Set((option("--keep") ?? "").split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty })
   let dryRun = flag("--dry-run")
   let yes = flag("--yes") || flag("-y")
-  if let extra = args.first { Term.fail("unknown option \(extra)") }
+  if let extra = args.first { Term.fail("未知选项：\(extra)") }
   exit(Commands.off(keep: keep, dryRun: dryRun, yes: yes) ? 0 : 1)
 case "revert":
   Commands.revert()
@@ -90,7 +90,7 @@ case "apply", "undo":
   let preset = presetOption()
   let dryRun = flag("--dry-run")
   let yes = flag("--yes") || flag("-y")
-  if let bad = args.first(where: { $0.hasPrefix("-") }) { Term.fail("unknown option \(bad)") }
+  if let bad = args.first(where: { $0.hasPrefix("-") }) { Term.fail("未知选项：\(bad)") }
   let ok = command == "apply"
     ? TweakCommands.apply(ids: args, preset: preset, dryRun: dryRun, yes: yes)
     : TweakCommands.undo(ids: args, dryRun: dryRun, yes: yes)
@@ -109,7 +109,7 @@ case "export":
   let preset = presetOption()
   let keep = Set((option("--keep") ?? "").split(separator: ",").map { String($0).trimmed }.filter { !$0.isEmpty })
   let noAI = flag("--no-ai")
-  guard let path = args.first else { Term.fail("name the file to write, for example: removemacai export RemoveMacAI.mobileconfig") }
+  guard let path = args.first else { Term.fail("请指定要写入的文件，例如：removemacai export RemoveMacAI.mobileconfig") }
   TweakCommands.export(path: path, ids: Array(args.dropFirst()), preset: preset, keepAI: keep, noAI: noAI)
 case "selftest":
   exit(selfTest() ? 0 : 1)

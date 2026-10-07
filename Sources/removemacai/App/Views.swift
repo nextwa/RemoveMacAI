@@ -45,14 +45,14 @@ struct Sidebar: View {
     @Bindable var model = model
     List(selection: $model.page) {
       row(.overview, badge: 0)
-      Section("Debloat") {
+      Section("系统精简") {
         row(.intelligence, badge: model.aiPending ? 1 : 0)
         ForEach(TweakGroup.allCases) { group in
           row(.group(group), badge: model.pending(in: group))
         }
         row(.background, badge: 0)
       }
-      Section("Clean Up") {
+      Section("清理与恢复") {
         row(.storage, badge: 0)
         row(.changes, badge: 0)
       }
@@ -75,11 +75,11 @@ struct PendingBar: View {
   var body: some View {
     HStack(spacing: 12) {
       Image(systemName: "circle.fill").font(.system(size: 7)).foregroundStyle(.tint)
-      Text(model.pendingCount == 1 ? "1 change to apply" : "\(model.pendingCount) changes to apply")
+      Text(model.pendingCount == 1 ? "有 1 项更改待应用" : "有 \(model.pendingCount) 项更改待应用")
         .font(.callout.weight(.medium))
       Spacer()
-      Button("Discard") { model.discard() }
-      Button("Review and Apply…") { model.reviewing = true }
+      Button("放弃更改") { model.discard() }
+      Button("检查并应用…") { model.reviewing = true }
         .buttonStyle(.borderedProminent)
         .keyboardShortcut(.defaultAction)
     }
@@ -97,8 +97,8 @@ struct ReviewSheet: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       VStack(alignment: .leading, spacing: 4) {
-        Text("Review changes").font(.title2.weight(.semibold))
-        Text("Nothing changes until you click Apply. Everything here can be undone later.")
+        Text("检查更改").font(.title2.weight(.semibold))
+        Text("点击“应用”后才会修改设置。此处的设置更改之后均可撤销。")
           .foregroundStyle(.secondary)
       }
       .padding(20)
@@ -106,39 +106,39 @@ struct ReviewSheet: View {
       if let plan {
         List {
           if !plan.apply.isEmpty {
-            Section("Apply") {
+            Section("应用") {
               ForEach(plan.apply) { t in ChangeRow(tweak: t, adding: true) }
             }
           }
           if !plan.revert.isEmpty {
-            Section("Undo") {
+            Section("撤销更改") {
               ForEach(plan.revert) { t in ChangeRow(tweak: t, adding: false) }
             }
           }
           if model.aiPending || !plan.models.isEmpty {
-            Section("Apple Intelligence") {
+            Section("Apple 智能") {
               if model.aiPending, let kept = model.targetAI {
                 Label(
-                  kept.isEmpty ? "Turn off every feature" : "Turn off everything except \(kept.count) kept feature\(kept.count == 1 ? "" : "s")",
+                  kept.isEmpty ? "关闭全部功能" : "关闭其他功能，保留所选的 \(kept.count) 项功能",
                   systemImage: "apple.intelligence")
               } else if model.aiPending {
-                Label("Turn Apple Intelligence back on. macOS downloads its models again when a feature needs them.", systemImage: "arrow.uturn.backward")
+                Label("重新启用 Apple 智能。使用相关功能时，macOS 会重新下载所需模型。", systemImage: "arrow.uturn.backward")
               }
               if !plan.models.isEmpty {
                 let bytes = model.modelBytes(plan.models)
                 Label(
-                  bytes.map { $0 > 0 ? "Delete the models, about \(Term.size($0))" : "Ask macOS to finish removing leftover model files" }
-                    ?? "Delete the models",
+                  bytes.map { $0 > 0 ? "删除模型，约 \(Term.size($0))" : "请求 macOS 完成剩余模型文件的清理" }
+                    ?? "删除模型",
                   systemImage: "trash")
               }
             }
           }
           if let profile = plan.profile {
-            Section("Approval") {
+            Section("系统授权") {
               Label(
                 profile.isEmpty
-                  ? "Remove the RemoveMacAI profile in System Settings."
-                  : "Approve the RemoveMacAI profile in System Settings. macOS asks for this click. The locked settings change once you do.",
+                  ? "请在“系统设置”中移除 RemoveMacAI 描述文件。"
+                  : "请在“系统设置”中批准安装 RemoveMacAI 描述文件。macOS 要求你手动确认，完成后带锁的设置才会更改。",
                 systemImage: "checkmark.shield")
             }
           }
@@ -150,9 +150,9 @@ struct ReviewSheet: View {
       Divider()
       HStack {
         Spacer()
-        Button("Cancel", role: .cancel) { model.reviewing = false }
+        Button("取消", role: .cancel) { model.reviewing = false }
           .keyboardShortcut(.cancelAction)
-        Button("Apply") { model.apply() }
+        Button("应用") { model.apply() }
           .buttonStyle(.borderedProminent)
           .keyboardShortcut(.defaultAction)
           .disabled(plan?.isEmpty ?? true)
@@ -164,7 +164,8 @@ struct ReviewSheet: View {
       let wanted = model.wanted
       let ai = model.targetAI
       let snapshot = model.snapshot
-      plan = await Task.detached { Plan.make(wanted: wanted, ai: ai, snapshot: snapshot) }.value
+      let undo = model.touched
+      plan = await Task.detached { Plan.make(wanted: wanted, ai: ai, undo: undo, snapshot: snapshot) }.value
     }
   }
 }
@@ -192,7 +193,7 @@ struct ChangeRow: View {
         Text(tweak.title)
         if tweak.inProfile {
           Image(systemName: "lock.fill").font(.caption).foregroundStyle(.secondary)
-            .help("Locked by the RemoveMacAI profile")
+            .help("由 RemoveMacAI 描述文件锁定")
         }
       }
     }
@@ -212,36 +213,36 @@ struct RunSheet: View {
         Text(text).font(.headline)
       case .approveProfile(let remove)?:
         Image(systemName: "checkmark.shield").font(.system(size: 44)).foregroundStyle(.tint)
-        Text(remove ? "Remove the profile in System Settings" : "Approve the profile in System Settings")
+        Text(remove ? "在“系统设置”中移除描述文件" : "在“系统设置”中批准描述文件")
           .font(.title3.weight(.semibold))
         VStack(alignment: .leading, spacing: 8) {
           if remove {
-            step(1, "In Device Management, select RemoveMacAI.")
-            step(2, "Click the minus button or Remove, then enter your password.")
+            step(1, "在“设备管理”中选择 RemoveMacAI。")
+            step(2, "点击减号或“移除”，然后输入密码。")
           } else {
-            step(1, "Under Downloaded, double-click RemoveMacAI.")
-            step(2, "Click Install, then enter your password.")
+            step(1, "在“已下载”区域中双击 RemoveMacAI。")
+            step(2, "点击“安装”，然后输入密码。")
           }
         }
         .frame(maxWidth: 360, alignment: .leading)
         HStack(spacing: 8) {
           ProgressView().controlSize(.small)
-          Text("Waiting for System Settings…").foregroundStyle(.secondary)
+          Text("正在等待系统设置确认…").foregroundStyle(.secondary)
         }
-        Text("If System Settings says the profile couldn't be installed, click Cancel and report it on GitHub.")
+        Text("如果“系统设置”提示无法安装描述文件，请点击“取消”，并在 GitHub 报告问题。")
           .font(.caption).foregroundStyle(.tertiary).multilineTextAlignment(.center).frame(maxWidth: 340)
         HStack {
-          Button("Cancel") { model.cancel() }
-          Button("Open System Settings") { Commands.openProfileSettings() }
+          Button("取消") { model.cancel() }
+          Button("打开系统设置") { Commands.openProfileSettings() }
             .buttonStyle(.borderedProminent)
         }
       case .finished(let problems, let freed)?:
         Image(systemName: problems.isEmpty ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
           .font(.system(size: 44))
           .foregroundStyle(problems.isEmpty ? Color.green : Color.orange)
-        Text(problems.isEmpty ? "Done" : "Finished with problems").font(.title3.weight(.semibold))
+        Text(problems.isEmpty ? "完成" : "已完成，但存在问题").font(.title3.weight(.semibold))
         if let freed, freed > 0 {
-          Text("Deleted \(Term.size(freed)) of models. macOS removes the files on its own schedule, so Storage settings can count them for a while.")
+          Text("已删除 \(Term.size(freed)) 的模型。macOS 会自行安排文件清理，因此“储存空间”可能暂时仍将其计入占用。")
             .multilineTextAlignment(.center).foregroundStyle(.secondary).frame(maxWidth: 380)
         }
         if !problems.isEmpty {
@@ -253,7 +254,7 @@ struct RunSheet: View {
           }
           .frame(maxWidth: 420, maxHeight: 160)
         }
-        Button("Done") { model.dismissRun() }
+        Button("完成") { model.dismissRun() }
           .buttonStyle(.borderedProminent)
           .keyboardShortcut(.defaultAction)
       case nil:

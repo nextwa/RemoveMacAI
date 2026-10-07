@@ -148,10 +148,10 @@ enum Engine {
     let aside = folder.appendingPathComponent("journal-unreadable-\(stamp)-\(UUID().uuidString.prefix(8)).json")
     do {
       try FileManager.default.moveItem(at: journalURL, to: aside)
-      FileHandle.standardError.write(Data("warning: \(journalURL.path) could not be read, so it was kept as \(aside.path). Undo can't restore what it recorded.\n".utf8))
+      FileHandle.standardError.write(Data("警告：无法读取 \(journalURL.path)，已另存为 \(aside.path)。无法依据其中的记录撤销更改。\n".utf8))
     } catch {
-      journalBlocked = "\(journalURL.path) can't be read or moved aside (\(error.localizedDescription)), so RemoveMacAI changes nothing until it is moved or fixed."
-      FileHandle.standardError.write(Data("warning: \(journalBlocked!)\n".utf8))
+      journalBlocked = "无法读取或移走 \(journalURL.path)（\(error.localizedDescription)）。移动或修复此文件前，RemoveMacAI 不会更改设置。"
+      FileHandle.standardError.write(Data("警告：\(journalBlocked!)\n".utf8))
     }
     return Journal()
   }
@@ -223,7 +223,7 @@ enum Engine {
         }
         Prefs.write(domain, k, value, currentHost: host)
         if !value.matches(Prefs.read(domain, k, currentHost: host)) {
-          problems.append("\(domain) \(k) did not change")
+          problems.append("\(domain) \(k) 未能更改")
         }
       case .service(let label):
         if journal.entries[key] == nil {
@@ -231,7 +231,7 @@ enum Engine {
             tweak: tweak.id, date: Date(), previous: .service(disabled: disabledServices().contains(label)))
         }
         let disabled = Shell.run("/bin/launchctl", ["disable", "gui/\(uid)/\(label)"])
-        if !disabled.ok { problems.append("could not disable \(label): \(disabled.output.trimmed)") }
+        if !disabled.ok { problems.append("无法停用 \(label)：\(disabled.output.trimmed)") }
         Shell.run("/bin/launchctl", ["bootout", "gui/\(uid)/\(label)"])
       case .dockRemove(let ids):
         let tiles = dockTiles()
@@ -256,7 +256,7 @@ enum Engine {
         if journal.entries[key] == nil {
           journal.entries[key] = .init(tweak: tweak.id, date: Date(), previous: .hidden(libraryHidden()))
         }
-        if !setLibraryHidden(false) { problems.append("could not show ~/Library") }
+        if !setLibraryHidden(false) { problems.append("无法显示 ~/Library") }
       }
     }
     return problems
@@ -279,7 +279,7 @@ enum Engine {
       case .service(let label):
         if case .service(let wasDisabled)? = entry?.previous, wasDisabled { break }
         let enabled = Shell.run("/bin/launchctl", ["enable", "gui/\(uid)/\(label)"])
-        if !enabled.ok { problems.append("could not enable \(label): \(enabled.output.trimmed)") }
+        if !enabled.ok { problems.append("无法启用 \(label)：\(enabled.output.trimmed)") }
         let plist = "/System/Library/LaunchAgents/\(label).plist"
         if FileManager.default.fileExists(atPath: plist),
           !Shell.run("/bin/launchctl", ["print", "gui/\(uid)/\(label)"]).ok
@@ -301,7 +301,7 @@ enum Engine {
       case .showLibrary:
         var hidden = true
         if case .hidden(let was)? = entry?.previous { hidden = was }
-        if !setLibraryHidden(hidden) { problems.append("could not hide ~/Library") }
+        if !setLibraryHidden(hidden) { problems.append("无法隐藏 ~/Library") }
       }
       journal.entries[key] = nil
     }

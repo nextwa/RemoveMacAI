@@ -1,21 +1,21 @@
 name: CI
-
 on:
   push:
-    branches: [main]
+    branches: [main, zh-Hans]
   pull_request:
-
 permissions:
   contents: read
-
 jobs:
   build:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
-      - name: Build
-        run: swift build -c release --arch arm64
+      - name: Build Chinese app
+        run: bash tools/build-app.sh
       - name: Self-test
-        run: "$(swift build -c release --arch arm64 --show-bin-path)/removemacai selftest"
-      - name: App bundle
-        run: tools/build-app.sh
+        run: '".build/RemoveMacAI 中文版.app/Contents/MacOS/RemoveMacAI" selftest'
+      - name: Package DMG
+        run: |
+          python3 -m venv .build/dmg-venv
+          .build/dmg-venv/bin/pip install -r tools/dmg-requirements.txt
+          .build/dmg-venv/bin/python tools/build-dmg.py
